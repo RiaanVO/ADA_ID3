@@ -15,8 +15,8 @@
       <file leaf-file-name="Main.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/riaanvo/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="60">
-              <caret line="4" column="44" lean-forward="false" selection-start-line="4" selection-start-column="44" selection-end-line="4" selection-end-column="44" />
+            <state relative-caret-position="75">
+              <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -25,17 +25,27 @@
       <file leaf-file-name="DataParser.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/riaanvo/DataParser.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="351">
-              <caret line="50" column="25" lean-forward="true" selection-start-line="50" selection-start-column="25" selection-end-line="50" selection-end-column="25" />
+            <state relative-caret-position="195">
+              <caret line="55" column="37" lean-forward="true" selection-start-line="55" selection-start-column="37" selection-end-line="55" selection-end-column="37" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#1226#1234#0" expanded="true" />
+                <element signature="method#DataParser#0;class#DataParser#0" expanded="false" />
                 <element signature="method#printDataArray#0;class#DataParser#0" expanded="false" />
                 <element signature="docComment;method#extractFileContents#0;class#DataParser#0" expanded="false" />
                 <element signature="method#extractFileContents#0;class#DataParser#0" expanded="false" />
-                <element signature="class#DataElement#0;class#DataParser#0" expanded="false" />
-                <element signature="e#3314#3315#0" expanded="true" />
-                <element signature="e#3377#3378#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="DataElement.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/riaanvo/DataElement.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="435">
+              <caret line="29" column="5" lean-forward="false" selection-start-line="29" selection-start-column="5" selection-end-line="29" selection-end-column="5" />
+              <folding>
+                <element signature="e#337#338#0" expanded="true" />
+                <element signature="e#392#393#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -60,6 +70,7 @@
       <list>
         <option value="$PROJECT_DIR$/src/com/riaanvo/Node.java" />
         <option value="$PROJECT_DIR$/src/com/riaanvo/Main.java" />
+        <option value="$PROJECT_DIR$/src/com/riaanvo/DataElement.java" />
         <option value="$PROJECT_DIR$/src/com/riaanvo/DataParser.java" />
       </list>
     </option>
@@ -212,7 +223,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <option name="time" value="2" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -239,13 +250,10 @@
           <caret line="101" column="9" lean-forward="true" selection-start-line="101" selection-start-column="9" selection-end-line="101" selection-end-column="9" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1226#1234#0" expanded="true" />
+            <element signature="method#DataParser#0;class#DataParser#0" expanded="false" />
             <element signature="method#printDataArray#0;class#DataParser#0" expanded="false" />
             <element signature="docComment;method#extractFileContents#0;class#DataParser#0" expanded="false" />
             <element signature="method#extractFileContents#0;class#DataParser#0" expanded="false" />
-            <element signature="class#DataElement#0;class#DataParser#0" expanded="false" />
-            <element signature="e#3314#3315#0" expanded="true" />
-            <element signature="e#3377#3378#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -262,25 +270,33 @@
     <entry file="file://$PROJECT_DIR$/src/com/riaanvo/Node.java" />
     <entry file="file://$PROJECT_DIR$/src/com/riaanvo/Main.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="44" lean-forward="false" selection-start-line="4" selection-start-column="44" selection-end-line="4" selection-end-column="44" />
+        <state relative-caret-position="75">
+          <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/riaanvo/DataElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="435">
+          <caret line="29" column="5" lean-forward="false" selection-start-line="29" selection-start-column="5" selection-end-line="29" selection-end-column="5" />
+          <folding>
+            <element signature="e#337#338#0" expanded="true" />
+            <element signature="e#392#393#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/com/riaanvo/DataParser.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="351">
-          <caret line="50" column="25" lean-forward="true" selection-start-line="50" selection-start-column="25" selection-end-line="50" selection-end-column="25" />
+        <state relative-caret-position="195">
+          <caret line="55" column="37" lean-forward="true" selection-start-line="55" selection-start-column="37" selection-end-line="55" selection-end-column="37" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1226#1234#0" expanded="true" />
+            <element signature="method#DataParser#0;class#DataParser#0" expanded="false" />
             <element signature="method#printDataArray#0;class#DataParser#0" expanded="false" />
             <element signature="docComment;method#extractFileContents#0;class#DataParser#0" expanded="false" />
             <element signature="method#extractFileContents#0;class#DataParser#0" expanded="false" />
-            <element signature="class#DataElement#0;class#DataParser#0" expanded="false" />
-            <element signature="e#3314#3315#0" expanded="true" />
-            <element signature="e#3377#3378#0" expanded="true" />
           </folding>
         </state>
       </provider>

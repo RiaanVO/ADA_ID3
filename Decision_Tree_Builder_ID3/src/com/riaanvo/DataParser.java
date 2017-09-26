@@ -5,9 +5,9 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class DataParser {
-    private String[] attibutes;
-    private LinkedList<LinkedList<String>> attibutesUniqueValues;
-    private String[][] traininngDataSet;
+    private String[] attributes;
+    private ArrayList<ArrayList<String>> uniqueAttributeValues;
+    private ArrayList<DataElement> trainingDataSet;
 
     public DataParser(String trainDataFilePath){
         //Extract training data file into a string
@@ -17,57 +17,67 @@ public class DataParser {
 
         System.out.println("Extracting data");
 
-
+        //Split into rows
         String[] rows = trainingCSVText.split("\n");
 
         //Split ito columns
-        attibutes = rows[0].split(",");
+        attributes = rows[0].split(",");
 
         //Construct data set
-        int numRows = rows.length - 1;
-        int numCols = attibutes.length;
-        traininngDataSet = new String[numRows][numCols];
-        for(int i = 1; i < rows.length; i++){
-            traininngDataSet[i - 1] = rows[i].split(",");
+        trainingDataSet = new ArrayList<>();
+
+        //Initialise the unique values array;
+        uniqueAttributeValues = new ArrayList();
+        for(int i = 0; i < attributes.length; i++){
+            uniqueAttributeValues.add(new ArrayList<>());
         }
 
-        //Getting unique values
-        attibutesUniqueValues = new LinkedList<LinkedList<String>>();
-        for(int i = 0; i < numCols; i++){
-            String s = attibutes[i] + ": ";
-            LinkedList<String> uniqueValues = new LinkedList<String>();
+        //Create all the data elements
+        for(int r = 1; r < rows.length; r++){
 
-            for(int r = 0; r < numRows; r ++){
-                String value = traininngDataSet[r][i];
-                if(!uniqueValues.contains(value)){
-                    s += value + ", ";
-                    uniqueValues.add(value);
+            //Split into the individual values
+            String[] values = rows[r].split(",");
+
+            //Create the unique values arraylist
+            for(int c = 0; c < values.length; c++){
+                if(!uniqueAttributeValues.get(c).contains(values[c])){
+                    uniqueAttributeValues.get(c).add(values[c]);
                 }
             }
-            System.out.println(s);
+
+            //Create a new dataElement
+            trainingDataSet.add(new DataElement(values));
         }
 
-
-        printDataArray();
+        printUniqueValues();
+        printDataArray(10);
     }
 
-    private void printDataArray(){
-        //Print out the data
-        String s = "\n\n\nData output\n";
-
-        for(String a : attibutes){
-            s += a + ", ";
-        }
-        s += "\n";
-
-        for(int r = 0; r < 10; r++){
-            for(int c = 0; c < attibutes.length; c++){
-                s += traininngDataSet[r][c] + ", ";
+    private void printUniqueValues(){
+        String s = "";
+        for(int c = 0; c < attributes.length; c++){
+            s += attributes[c] + ":\n\t";
+            ArrayList<String> uniqueValues = uniqueAttributeValues.get(c);
+            for(int v = 0; v < uniqueValues.size(); v++){
+                s += uniqueValues.get(v) + ", ";
             }
             s += "\n";
         }
+        System.out.println(s);
+    }
 
+    private void printDataArray(int numToShow){
+        //Print out the data
+        String s = "\nData output\n";
 
+        for(String a : attributes){
+            s += a + ", ";
+        }
+
+        s += "\n";
+        for(int i = 0; i < numToShow; i ++){
+            s += trainingDataSet.get(i).toString() + "\n";
+        }
         System.out.println(s);
     }
 
@@ -109,30 +119,4 @@ public class DataParser {
         return output;
     }
 
-    private class DataElement{
-        ArrayList<String> values;
-
-        public DataElement(String[] values){
-            this.values = new ArrayList<>();
-            for(String value: values){
-                this.values.add(value);
-            }
-        }
-
-        public boolean matchesValue(int column, String value){
-            return values.get(column).equals(value);
-        }
-
-        public String toString(){
-            int numValues = values.size();
-            String s = "";
-            for(int i = 0; i < numValues; i++){
-                s += values.get(i);
-                if(i != numValues - 1) {
-                    s += ", ";
-                }
-            }
-            return s;
-        }
-    }
 }
