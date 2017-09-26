@@ -5,8 +5,9 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class DataParser {
-    private String[] attributes;
-    private ArrayList<ArrayList<String>> uniqueAttributeValues;
+    //private String[] attributes;
+    //private ArrayList<ArrayList<String>> uniqueAttributeValues;
+    private DataDescriptor dataDescriptor;
     private ArrayList<DataElement> trainingDataSet;
 
     public DataParser(String trainDataFilePath){
@@ -20,63 +21,40 @@ public class DataParser {
         //Split into rows
         String[] rows = trainingCSVText.split("\n");
 
-        //Split ito columns
-        attributes = rows[0].split(",");
-
-        //Construct data set
+        dataDescriptor = new DataDescriptor(rows[0].split(","));
         trainingDataSet = new ArrayList<>();
-
-        //Initialise the unique values array;
-        uniqueAttributeValues = new ArrayList();
-        for(int i = 0; i < attributes.length; i++){
-            uniqueAttributeValues.add(new ArrayList<>());
-        }
 
         //Create all the data elements
         for(int r = 1; r < rows.length; r++){
-
             //Split into the individual values
             String[] values = rows[r].split(",");
 
             //Create the unique values arraylist
             for(int c = 0; c < values.length; c++){
-                if(!uniqueAttributeValues.get(c).contains(values[c])){
-                    uniqueAttributeValues.get(c).add(values[c]);
-                }
+                dataDescriptor.tryAddUniqueValue(c, values[c]);
             }
 
             //Create a new dataElement
-            trainingDataSet.add(new DataElement(values));
+            trainingDataSet.add(new DataElement(dataDescriptor.convertStringValuesToInt(values)));
         }
+        //Set all elements data descriptors to this
+        trainingDataSet.get(0).setDataDescriptor(dataDescriptor);
 
-        printUniqueValues();
-        printDataArray(10);
+        dataDescriptor.printUniqueValues();
+        printDataArray(10, false);
     }
 
-    private void printUniqueValues(){
-        String s = "";
-        for(int c = 0; c < attributes.length; c++){
-            s += attributes[c] + ":\n\t";
-            ArrayList<String> uniqueValues = uniqueAttributeValues.get(c);
-            for(int v = 0; v < uniqueValues.size(); v++){
-                s += uniqueValues.get(v) + ", ";
-            }
-            s += "\n";
-        }
-        System.out.println(s);
-    }
-
-    private void printDataArray(int numToShow){
+    private void printDataArray(int numToShow, boolean asStrings){
         //Print out the data
         String s = "\nData output\n";
 
-        for(String a : attributes){
-            s += a + ", ";
-        }
+        //for(String a : attributes){
+          //  s += a + ", ";
+        //}
 
         s += "\n";
         for(int i = 0; i < numToShow; i ++){
-            s += trainingDataSet.get(i).toString() + "\n";
+            s += trainingDataSet.get(i).toString(asStrings) + "\n";
         }
         System.out.println(s);
     }
@@ -118,5 +96,4 @@ public class DataParser {
 
         return output;
     }
-
 }
