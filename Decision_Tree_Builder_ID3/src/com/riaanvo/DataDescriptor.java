@@ -3,16 +3,25 @@ package com.riaanvo;
 import java.util.ArrayList;
 
 public class DataDescriptor {
-    String[] attributeHeaders;
-    ArrayList<ArrayList<String>> uniqueAttributeValues;
+    private  ArrayList<String> attributeHeaders;
+    private ArrayList<ArrayList<String>> uniqueAttributeValues;
+    private int numberOfClasses = 0;
+    private int classColumnIndex = 0;
 
     public DataDescriptor(String[] attributeHeaders){
-        this.attributeHeaders = attributeHeaders;
+        this.attributeHeaders = new ArrayList<>();
+        for(String attribute: attributeHeaders){
+            this.attributeHeaders.add(attribute);
+        }
 
         //Set up the array for unique values
-        uniqueAttributeValues = new ArrayList();
+        uniqueAttributeValues = new ArrayList<>();
         for(int i = 0; i < attributeHeaders.length; i++){
             uniqueAttributeValues.add(new ArrayList<>());
+
+            if(attributeHeaders[i].contains("#")){
+                classColumnIndex = i;
+            }
         }
     }
 
@@ -42,11 +51,34 @@ public class DataDescriptor {
         return uniqueAttributeValues.get(columnIndex).get(valueIndex);
     }
 
+    public ArrayList<String> getAttributeValues(int columnIndex){
+        return uniqueAttributeValues.get(columnIndex);
+    }
+
+    public int getClassIndex(){
+        return classColumnIndex;
+    }
+
+    public int getNumberOfClasses(){
+        if(numberOfClasses == 0){
+            numberOfClasses = uniqueAttributeValues.get(classColumnIndex).size();
+        }
+        return numberOfClasses;
+    }
+
+    public int getNumberOfAttributes(){
+        return attributeHeaders.size();
+    }
+
+    public String getAttributeHeaderValue(int columnIndex){
+        if(columnIndex == -1) return "No Split";
+        return attributeHeaders.get(columnIndex);
+    }
 
     public void printUniqueValues(){
         String s = "";
-        for(int c = 0; c < attributeHeaders.length; c++){
-            s += attributeHeaders[c] + ":\n";
+        for(int c = 0; c < attributeHeaders.size(); c++){
+            s += attributeHeaders.get(c) + ":\n";
             ArrayList<String> uniqueValues = uniqueAttributeValues.get(c);
             for(int v = 0; v < uniqueValues.size(); v++){
                 s += "\t" + v + ": " + uniqueValues.get(v) + "\n";

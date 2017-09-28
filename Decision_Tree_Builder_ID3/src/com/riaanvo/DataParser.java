@@ -40,8 +40,8 @@ public class DataParser {
         //Set all elements data descriptors to this
         trainingDataSet.get(0).setDataDescriptor(dataDescriptor);
 
-        dataDescriptor.printUniqueValues();
-        printDataArray(10, false);
+        //dataDescriptor.printUniqueValues();
+        //printDataArray(10, false);
     }
 
     private void printDataArray(int numToShow, boolean asStrings){
@@ -95,5 +95,13 @@ public class DataParser {
         }
 
         return output;
+    }
+
+    public DataDescriptor getDataDescriptor() {
+        return dataDescriptor;
+    }
+
+    public ArrayList<DataElement> getTrainingDataSet() {
+        return trainingDataSet;
     }
 }
