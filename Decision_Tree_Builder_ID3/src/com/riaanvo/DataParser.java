@@ -8,56 +8,33 @@ public class DataParser {
     //private String[] attributes;
     //private ArrayList<ArrayList<String>> uniqueAttributeValues;
     private DataDescriptor dataDescriptor;
-    private ArrayList<DataElement> trainingDataSet;
+    private ArrayList<DataElement> dataSet;
 
-    public DataParser(String trainDataFilePath){
+    public DataParser(String filePath, DataDescriptor dataDescriptor){
+        this.dataDescriptor = dataDescriptor;
+        long previousTime = System.currentTimeMillis();
+
+        System.out.println("To load: " + filePath);
+
         //Extract training data file into a string
-        System.out.println("Loading training data set");
+        System.out.print("Loading data set:");
 
-        String trainingCSVText = extractFileContents(trainDataFilePath);
+        String trainingCSVText = extractFileContents(filePath);
 
-        System.out.println("Extracting data");
+        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
+        previousTime = System.currentTimeMillis();
+        System.out.print("Extracting data:");
 
         //Split into rows
         String[] rows = trainingCSVText.split("\n");
+        extractDataSet(rows, dataDescriptor);
 
-        dataDescriptor = new DataDescriptor(rows[0].split(","));
-        trainingDataSet = new ArrayList<>();
+        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
 
-        //Create all the data elements
-        for(int r = 1; r < rows.length; r++){
-            //Split into the individual values
-            String[] values = rows[r].split(",");
 
-            //Create the unique values arraylist
-            for(int c = 0; c < values.length; c++){
-                dataDescriptor.tryAddUniqueValue(c, values[c]);
-            }
 
-            //Create a new dataElement
-            trainingDataSet.add(new DataElement(dataDescriptor.convertStringValuesToInt(values)));
-        }
-        //Set all elements data descriptors to this
-        trainingDataSet.get(0).setDataDescriptor(dataDescriptor);
-
-        //dataDescriptor.printUniqueValues();
-        //printDataArray(10, false);
     }
 
-    private void printDataArray(int numToShow, boolean asStrings){
-        //Print out the data
-        String s = "\nData output\n";
-
-        //for(String a : attributes){
-          //  s += a + ", ";
-        //}
-
-        s += "\n";
-        for(int i = 0; i < numToShow; i ++){
-            s += trainingDataSet.get(i).toString(asStrings) + "\n";
-        }
-        System.out.println(s);
-    }
 
     /**
      * Code from https://www.mkyong.com/java/how-to-read-file-from-java-bufferedreader-example/
@@ -97,11 +74,52 @@ public class DataParser {
         return output;
     }
 
+    private void extractDataSet(String[] rows, DataDescriptor dataDescriptor){
+        dataSet = new ArrayList<>();
+        boolean dataDescriptorPredefined = true;
+        if(dataDescriptor == null){
+            this.dataDescriptor = new DataDescriptor(rows[0].split(","));
+            dataDescriptorPredefined = false;
+        }
+
+        //Create all the data elements
+        for(int r = 1; r < rows.length; r++){
+            //Split into the individual values
+            String[] values = rows[r].split(",");
+
+            if(!dataDescriptorPredefined) {
+                //Create the unique values arraylist
+                for (int c = 0; c < values.length; c++) {
+                    this.dataDescriptor.tryAddUniqueValue(c, values[c]);
+                }
+            }
+
+            //Create a new dataElement
+            dataSet.add(new DataElement(this.dataDescriptor.convertStringValuesToInt(values)));
+        }
+        //Set all elements data descriptors to this
+        dataSet.get(0).setDataDescriptor(this.dataDescriptor);
+    }
+
     public DataDescriptor getDataDescriptor() {
         return dataDescriptor;
     }
 
-    public ArrayList<DataElement> getTrainingDataSet() {
-        return trainingDataSet;
+    public ArrayList<DataElement> getDataSet() {
+        return dataSet;
+    }
+
+    public String toString(int numToShow, boolean asStrings){
+        String s = "";
+
+        if(dataDescriptor != null){
+            s += dataDescriptor.toString();
+        }
+
+        s += "\n\nData output\n";
+        for(int i = 0; i < numToShow; i ++){
+            s += dataSet.get(i).toString(asStrings) + "\n";
+        }
+        return s;
     }
 }

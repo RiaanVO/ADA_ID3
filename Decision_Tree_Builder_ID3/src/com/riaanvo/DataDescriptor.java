@@ -75,7 +75,7 @@ public class DataDescriptor {
         return attributeHeaders.get(columnIndex);
     }
 
-    public void printUniqueValues(){
+    public String toString(){
         String s = "";
         for(int c = 0; c < attributeHeaders.size(); c++){
             s += attributeHeaders.get(c) + ":\n";
@@ -85,6 +85,6 @@ public class DataDescriptor {
             }
             s += "\n";
         }
-        System.out.println(s);
+        return s;
     }
 }
