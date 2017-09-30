@@ -42,7 +42,7 @@ public class DataParser {
      * @return
      */
     private String extractFileContents(String filepath){
-        String output = "";
+        StringBuilder output = new StringBuilder();
         BufferedReader br = null;
         FileReader fr = null;
 
@@ -55,7 +55,7 @@ public class DataParser {
             String nextLine;
 
             while ((nextLine = br.readLine()) != null) {
-                output += nextLine + "\n";
+                output.append(nextLine).append("\n");
             }
 
         } catch (IOException e) {
@@ -71,7 +71,7 @@ public class DataParser {
             }
         }
 
-        return output;
+        return output.toString();
     }
 
     private void extractDataSet(String[] rows, DataDescriptor dataDescriptor){
@@ -88,7 +88,7 @@ public class DataParser {
             String[] values = rows[r].split(",");
 
             if(!dataDescriptorPredefined) {
-                //Create the unique values arraylist
+                //Create the unique values  Array List
                 for (int c = 0; c < values.length; c++) {
                     this.dataDescriptor.tryAddUniqueValue(c, values[c]);
                 }
@@ -98,7 +98,7 @@ public class DataParser {
             dataSet.add(new DataElement(this.dataDescriptor.convertStringValuesToInt(values)));
         }
         //Set all elements data descriptors to this
-        dataSet.get(0).setDataDescriptor(this.dataDescriptor);
+        DataElement.setDataDescriptor(this.dataDescriptor);
     }
 
     public DataDescriptor getDataDescriptor() {
@@ -110,16 +110,16 @@ public class DataParser {
     }
 
     public String toString(int numToShow, boolean asStrings){
-        String s = "";
+        StringBuilder s = new StringBuilder();
 
         if(dataDescriptor != null){
-            s += dataDescriptor.toString();
+            s.append(dataDescriptor.toString());
         }
 
-        s += "\n\nData output\n";
+        s.append("\n\nData output\n");
         for(int i = 0; i < numToShow; i ++){
-            s += dataSet.get(i).toString(asStrings) + "\n";
+            s.append(dataSet.get(i).toString(asStrings)).append("\n");
         }
-        return s;
+        return s.toString();
     }
 }

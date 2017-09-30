@@ -1,18 +1,17 @@
 package com.riaanvo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class DataDescriptor {
-    private  ArrayList<String> attributeHeaders;
-    private ArrayList<ArrayList<String>> uniqueAttributeValues;
+    private final ArrayList<String> attributeHeaders;
+    private final ArrayList<ArrayList<String>> uniqueAttributeValues;
     private int numberOfClasses = 0;
     private int classColumnIndex = 0;
 
     public DataDescriptor(String[] attributeHeaders){
         this.attributeHeaders = new ArrayList<>();
-        for(String attribute: attributeHeaders){
-            this.attributeHeaders.add(attribute);
-        }
+        Collections.addAll(this.attributeHeaders, attributeHeaders);
 
         //Set up the array for unique values
         uniqueAttributeValues = new ArrayList<>();
@@ -37,14 +36,6 @@ public class DataDescriptor {
             iValues[i] = uniqueAttributeValues.get(i).indexOf(sValues[i]);
         }
         return iValues;
-    }
-
-    public String[] convertIntValuesToString(int[] iValues){
-        String[] sValues = new String[iValues.length];
-        for(int i = 0; i < sValues.length; i++){
-            sValues[i] = uniqueAttributeValues.get(i).get(iValues[i]);
-        }
-        return sValues;
     }
 
     public String indexToValue(int columnIndex, int valueIndex){
@@ -76,15 +67,15 @@ public class DataDescriptor {
     }
 
     public String toString(){
-        String s = "";
+        StringBuilder s = new StringBuilder();
         for(int c = 0; c < attributeHeaders.size(); c++){
-            s += attributeHeaders.get(c) + ":\n";
+            s.append(attributeHeaders.get(c)).append(":\n");
             ArrayList<String> uniqueValues = uniqueAttributeValues.get(c);
             for(int v = 0; v < uniqueValues.size(); v++){
-                s += "\t" + v + ": " + uniqueValues.get(v) + "\n";
+                s.append("\t").append(v).append(": ").append(uniqueValues.get(v)).append("\n");
             }
-            s += "\n";
+            s.append("\n");
         }
-        return s;
+        return s.toString();
     }
 }

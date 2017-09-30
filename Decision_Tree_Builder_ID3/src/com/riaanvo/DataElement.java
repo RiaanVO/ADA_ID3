@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class DataElement {
     private static DataDescriptor dataDescriptor;
-    ArrayList<Integer> values;
+    final ArrayList<Integer> values;
 
     public DataElement(int[] values){
         this.values = new ArrayList<>();
@@ -13,30 +13,26 @@ public class DataElement {
         }
     }
 
-    public boolean matchesValue(int column, int value){
-        return values.get(column) == value;
-    }
-
     public String toString(boolean displayAsStrings){
         int numValues = values.size();
-        String s = "";
+        StringBuilder s = new StringBuilder();
         for(int i = 0; i < numValues; i++){
             if(displayAsStrings){
-                s += dataDescriptor.indexToValue(i, values.get(i));
+                s.append(dataDescriptor.indexToValue(i, values.get(i)));
             } else {
-                s += values.get(i);
+                s.append(values.get(i));
             }
 
             if(i != numValues - 1) {
-                s += ", ";
+                s.append(", ");
             }
         }
 
-        return s;
+        return s.toString();
     }
 
-    public void setDataDescriptor(DataDescriptor dataDescriptor){
-        this.dataDescriptor = dataDescriptor;
+    static void setDataDescriptor(DataDescriptor newDataDescriptor){
+        dataDescriptor = newDataDescriptor;
     }
 
 }

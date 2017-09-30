@@ -15,7 +15,7 @@ public class Main {
 
         System.out.println(id3Tree.testDataSet(testingDataParser.getDataSet()) + "\n");
 
-        //System.out.println(id3Tree.createTreeDiagramScript());
+        System.out.println(id3Tree.createTreeDiagramScript());
 
 
 

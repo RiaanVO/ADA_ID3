@@ -4,18 +4,16 @@ import java.util.ArrayList;
 
 public class ID3 {
     private static int currentNodeIndex = 0;
-    private DataDescriptor dataDescriptor;
-    private ArrayList<DataElement> trainingData;
+    private final DataDescriptor dataDescriptor;
 
     private Node rootNode;
 
     public ID3(DataDescriptor dataDescriptor, ArrayList<DataElement> trainingData){
         this.dataDescriptor = dataDescriptor;
-        this.trainingData = trainingData;
-        buildModel();
+        buildModel(trainingData);
     }
 
-    private void buildModel(){
+    private void buildModel(ArrayList<DataElement> trainingData){
         long previousTime = System.currentTimeMillis();
         System.out.print("Building ID3 Tree:");
 
@@ -46,42 +44,42 @@ public class ID3 {
         }
 
         System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms\n");
-        String s = "";
-        s += "Number of samples: " + testingData.size() + "\n";
+        StringBuilder s = new StringBuilder();
+        s.append("Number of samples: ").append(testingData.size()).append("\n");
 
-        s += "Tr \\ Pr\n";
+        s.append("Tr \\ Pr\n");
         for(int r = 0; r < confusionMatrix.length; r++){
             for(int c = 0; c < confusionMatrix[0].length; c++){
-                s += confusionMatrix[r][c] + "\t";
+                s.append(confusionMatrix[r][c]).append("\t");
             }
 
             if(r < confusionMatrix.length - 1) {
-                s += "\n";
+                s.append("\n");
             }
         }
 
         if(confusionMatrix.length == 2 && confusionMatrix[0].length == 2){
             double accuracy = (double) (confusionMatrix[0][0] + confusionMatrix[1][1]) / (double) testingData.size() * 100;
-            s += "\nAccuracy: " + accuracy + "%";
+            s.append("\nAccuracy: ").append(accuracy).append("%");
             double errorRate = (double) (confusionMatrix[0][1] + confusionMatrix[1][0]) / (double) testingData.size() * 100;
-            s += "\nError Rate: " + errorRate + "%";
+            s.append("\nError Rate: ").append(errorRate).append("%");
             double FAR = (double) (confusionMatrix[0][1]) / (double) (confusionMatrix[0][1] + confusionMatrix[0][0]) * 100;
-            s += "\nFalse Alarm Rate: " + FAR + "%";
+            s.append("\nFalse Alarm Rate: ").append(FAR).append("%");
             double DR = (double) (confusionMatrix[1][1]) / (double) (confusionMatrix[1][1] + confusionMatrix[1][0]) * 100;
-            s += "\nDetection Rate: " + DR + "%";
+            s.append("\nDetection Rate: ").append(DR).append("%");
             double precision = (double) (confusionMatrix[1][1]) / (double) (confusionMatrix[0][1] + confusionMatrix[1][1]) * 100;
-            s += "\nPrecision: " + precision + "%";
+            s.append("\nPrecision: ").append(precision).append("%");
             double recall = DR;
-            s += "\nRecall: " + recall + "%";
+            s.append("\nRecall: ").append(recall).append("%");
             double F1 = 2 * precision * recall / (precision + recall);
-            s += "\nF1 score: " + F1 + "%";
+            s.append("\nF1 score: ").append(F1).append("%");
         }
 
-        return s;
+        return s.toString();
     }
 
     private class Node{
-        private int nodeIndex;
+        private final int nodeIndex;
         private int attributeSplitIndex = -1;
         private double currentSampleEntropy = 1;
         private int sampleCount = 0;
@@ -129,9 +127,9 @@ public class ID3 {
 
         private boolean isSingleClass(){
             boolean isSingleClass = false;
-            for(int i = 0; i < classCounts.length; i ++){
-                if(classCounts[i] != 0){
-                    if(!isSingleClass){
+            for (int classCount : classCounts) {
+                if (classCount != 0) {
+                    if (!isSingleClass) {
                         isSingleClass = true;
                     } else {
                         isSingleClass = false;
@@ -143,7 +141,7 @@ public class ID3 {
         }
 
         private void constructSubNodes(ArrayList<DataElement> samples){
-            subNodes = new ArrayList<Node>();
+            subNodes = new ArrayList<>();
 
             int largestInfoGain = 0;
             double currentLargestInfoGain = Double.MIN_VALUE;
@@ -162,8 +160,8 @@ public class ID3 {
             attributeSplitIndex = largestInfoGain;
             ArrayList<ArrayList<DataElement>> valueSubsets = getSubSets(samples, attributeSplitIndex);
 
-            for(int i = 0; i < valueSubsets.size(); i ++){
-                subNodes.add(new Node(valueSubsets.get(i)));
+            for (ArrayList<DataElement> valueSubset : valueSubsets) {
+                subNodes.add(new Node(valueSubset));
             }
         }
 
@@ -176,9 +174,9 @@ public class ID3 {
 
             double subSetEntropySum = 0;
 
-            for(int i = 0; i < valueSubsets.size(); i ++){
-                if(valueSubsets.get(i).size() == 0) continue;
-                subSetEntropySum += ((double) valueSubsets.get(i).size() / (double)sampleSize) *  getEntropy(valueSubsets.get(i));
+            for (ArrayList<DataElement> valueSubset : valueSubsets) {
+                if (valueSubset.size() == 0) continue;
+                subSetEntropySum += ((double) valueSubset.size() / (double) sampleSize) * getEntropy(valueSubset);
             }
 
             return sampleEntropy - subSetEntropySum;
@@ -195,9 +193,9 @@ public class ID3 {
             }
 
             double ent = 0;
-            for(int i = 0; i < classValueCounts.length; i++){
-                double p_ = (double)classValueCounts[i] / (double)sampleSize;
-                if(p_ == 0) continue;
+            for (int classValueCount : classValueCounts) {
+                double p_ = (double) classValueCount / (double) sampleSize;
+                if (p_ == 0) continue;
                 ent += -p_ * Math.log(p_);
             }
 
@@ -218,48 +216,46 @@ public class ID3 {
             return valueSubsets;
         }
 
-        public int getNodeIndex(){
+        private int getNodeIndex(){
             return nodeIndex;
         }
 
-        public int getSampleCount(){
+        private int getSampleCount(){
             return sampleCount;
         }
 
-        public int determineClass(DataElement dataElement){
+        private int determineClass(DataElement dataElement){
             if(subNodes == null) return currentClassValue;
             return subNodes.get(dataElement.values.get(attributeSplitIndex)).determineClass(dataElement);
         }
 
         public String toString(){
-            //0 [label="petal length (cm) <= 2.45\ngini = 0.6665\nsamples = 120\nvalue = [40, 41, 39]\nclass = versicolor", fillcolor="#11111103"] ;
-
-            String s = "";
-            s += nodeIndex + " [label=\"";
-            s += "Split on: " + dataDescriptor.getAttributeHeaderValue(attributeSplitIndex) + "\\n";
-            s += "Entropy = " + currentSampleEntropy + "\\n";
-            s += "Samples: " + sampleCount + "\\n";
-            s += "Class counts: [";
+            StringBuilder s = new StringBuilder();
+            s.append(nodeIndex).append(" [label=\"");
+            s.append("Split on: ").append(dataDescriptor.getAttributeHeaderValue(attributeSplitIndex)).append("\\n");
+            s.append("Entropy = ").append(currentSampleEntropy).append("\\n");
+            s.append("Samples: ").append(sampleCount).append("\\n");
+            s.append("Class counts: [");
             for(int i = 0; i < classCounts.length; i ++){
-                s += classCounts[i];
+                s.append(classCounts[i]);
                 if(i < classCounts.length - 1){
-                    s += ",";
+                    s.append(",");
                 }
             }
-            s += "]\\n";
-            s += "Class: " + dataDescriptor.getAttributeValues(dataDescriptor.getClassIndex()).get(currentClassValue) + "\"";
-            s += ", fillcolor=\"#" + 11111103 + "\"];\n";
+            s.append("]\\n");
+            s.append("Class: ").append(dataDescriptor.getAttributeValues(dataDescriptor.getClassIndex()).get(currentClassValue)).append("\"");
+            s.append(", fillcolor=\"#" + 11111103 + "\"];\n");
             if(subNodes != null){
                 for (int i = 0; i < subNodes.size(); i++ ) {
                     if(subNodes.get(i).getSampleCount() == 0) continue;
-                    s += subNodes.get(i).toString();
-                    //0 -> 1 [headlabel="True"] ;
-                    s += getNodeIndex() + " -> " + subNodes.get(i).getNodeIndex() + "[label=\"" + dataDescriptor.getAttributeValues(attributeSplitIndex).get(i) + "\"]" + ";";
-                    s += "\n";
+                    s.append(subNodes.get(i).toString());
+                    s.append(getNodeIndex()).append(" -> ").append(subNodes.get(i).getNodeIndex());
+                    s.append("[label=\"").append(dataDescriptor.getAttributeValues(attributeSplitIndex).get(i)).append("\"]").append(";");
+                    s.append("\n");
                 }
             }
 
-            return s;
+            return s.toString();
         }
     }
 }
@@ -283,20 +279,4 @@ public class ID3 {
             Else below this new branch add the subtree ID3 (Examples(vi), Target_Attribute, Attributes – {A})
     End
     Return Root
-    */
-
-/*
-*
-* if(classCounts == null) return s;
-            s += dataDescriptor.getAttributeValues(dataDescriptor.getClassIndex()).get(currentClassValue) + " | [";
-            for(Integer count : classCounts){
-                s+= count + ", ";
-            }
-            s += "] | Split attribute: " + dataDescriptor.getAttributeHeaderValue(attributeSplitIndex) + "\n";
-
-            if(subNodes != null) {
-                for (Node node : subNodes) {
-                    s += "\t" + node.toString() + "\n";
-                }
-            }
 */
