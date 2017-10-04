@@ -107,7 +107,7 @@ public class DataParser {
         return dataSet;
     }
 
-    public String toString(int numToShow, boolean asStrings){
+    public String toString(int numToShow){
         StringBuilder s = new StringBuilder();
 
         if(dataDescriptor != null){
@@ -116,7 +116,7 @@ public class DataParser {
 
         s.append("\n\nData output\n");
         for(int i = 0; i < numToShow; i ++){
-            s.append(dataSet.get(i).toString(asStrings)).append("\n");
+            s.append(dataSet.get(i).toString()).append("\n");
         }
         return s.toString();
     }

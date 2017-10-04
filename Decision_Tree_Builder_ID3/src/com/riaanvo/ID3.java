@@ -40,7 +40,7 @@ public class ID3 {
         int[][] confusionMatrix = new int[numberOfClasses][numberOfClasses];
 
         for(DataElement dataElement: testingData){
-            confusionMatrix[dataElement.values.get(classIndex)][rootNode.determineClass(dataElement)] ++;
+            confusionMatrix[dataElement.getValue(classIndex)][rootNode.determineClass(dataElement)] ++;
         }
 
         System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms\n");
@@ -112,7 +112,7 @@ public class ID3 {
             //Generate the current class counts based on the samples
             classCounts = new int[dataDescriptor.getNumberOfClasses()];
             for(DataElement dataElement : samples){
-                classCounts[dataElement.values.get(dataDescriptor.getClassAttributeIndex())] ++;
+                classCounts[dataElement.getValue(dataDescriptor.getClassAttributeIndex())] ++;
             }
         }
 
@@ -189,7 +189,7 @@ public class ID3 {
 
             //Count the number of data elements for each attribute value
             for(DataElement dataElement: samples){
-                classValueCounts[dataElement.values.get(classIndex)] ++;
+                classValueCounts[dataElement.getValue(classIndex)] ++;
             }
 
             double ent = 0;
@@ -210,7 +210,7 @@ public class ID3 {
 
             //Populate the subSets
             for(DataElement dataElement: samples){
-                valueSubsets.get(dataElement.values.get(attributeIndex)).add(dataElement);
+                valueSubsets.get(dataElement.getValue(attributeIndex)).add(dataElement);
             }
 
             return valueSubsets;
@@ -226,7 +226,7 @@ public class ID3 {
 
         private int determineClass(DataElement dataElement){
             if(subNodes == null) return currentClassValue;
-            return subNodes.get(dataElement.values.get(attributeSplitIndex)).determineClass(dataElement);
+            return subNodes.get(dataElement.getValue(attributeSplitIndex)).determineClass(dataElement);
         }
 
         public String toString(){
