@@ -35,7 +35,7 @@ public class ID3 {
         System.out.print("Testing model:");
 
         int numberOfClasses = dataDescriptor.getNumberOfClasses();
-        int classIndex = dataDescriptor.getClassIndex();
+        int classIndex = dataDescriptor.getClassAttributeIndex();
 
         int[][] confusionMatrix = new int[numberOfClasses][numberOfClasses];
 
@@ -112,7 +112,7 @@ public class ID3 {
             //Generate the current class counts based on the samples
             classCounts = new int[dataDescriptor.getNumberOfClasses()];
             for(DataElement dataElement : samples){
-                classCounts[dataElement.values.get(dataDescriptor.getClassIndex())] ++;
+                classCounts[dataElement.values.get(dataDescriptor.getClassAttributeIndex())] ++;
             }
         }
 
@@ -148,7 +148,7 @@ public class ID3 {
             double infoGain;
 
             for(int i = 0; i < dataDescriptor.getNumberOfAttributes(); i++){
-                if(i == dataDescriptor.getClassIndex()) continue;
+                if(i == dataDescriptor.getClassAttributeIndex()) continue;
 
                 infoGain = getInfoGain(samples, i);
                 if(infoGain > currentLargestInfoGain){
@@ -183,9 +183,9 @@ public class ID3 {
         }
 
         private double getEntropy(ArrayList<DataElement> samples){
-            int classIndex = dataDescriptor.getClassIndex();
+            int classIndex = dataDescriptor.getClassAttributeIndex();
             int sampleSize = samples.size();
-            int[] classValueCounts = new int[dataDescriptor.getAttributeValues(classIndex).size()];
+            int[] classValueCounts = new int[dataDescriptor.getUniqueAttributeValues(classIndex).size()];
 
             //Count the number of data elements for each attribute value
             for(DataElement dataElement: samples){
@@ -204,7 +204,7 @@ public class ID3 {
 
         private ArrayList<ArrayList<DataElement>> getSubSets(ArrayList<DataElement> samples, int attributeIndex){
             ArrayList<ArrayList<DataElement>> valueSubsets = new ArrayList<>();
-            for(int i = 0; i < dataDescriptor.getAttributeValues(attributeIndex).size(); i++){
+            for(int i = 0; i < dataDescriptor.getUniqueAttributeValues(attributeIndex).size(); i++){
                 valueSubsets.add(new ArrayList<>());
             }
 
@@ -232,7 +232,7 @@ public class ID3 {
         public String toString(){
             StringBuilder s = new StringBuilder();
             s.append(nodeIndex).append(" [label=\"");
-            s.append("Split on: ").append(dataDescriptor.getAttributeHeaderValue(attributeSplitIndex)).append("\\n");
+            s.append("Split on: ").append(dataDescriptor.getAttribute(attributeSplitIndex)).append("\\n");
             s.append("Entropy = ").append(currentSampleEntropy).append("\\n");
             s.append("Samples: ").append(sampleCount).append("\\n");
             s.append("Class counts: [");
@@ -243,14 +243,14 @@ public class ID3 {
                 }
             }
             s.append("]\\n");
-            s.append("Class: ").append(dataDescriptor.getAttributeValues(dataDescriptor.getClassIndex()).get(currentClassValue)).append("\"");
+            s.append("Class: ").append(dataDescriptor.getUniqueAttributeValues(dataDescriptor.getClassAttributeIndex()).get(currentClassValue)).append("\"");
             s.append(", fillcolor=\"#" + 11111103 + "\"];\n");
             if(subNodes != null){
                 for (int i = 0; i < subNodes.size(); i++ ) {
                     if(subNodes.get(i).getSampleCount() == 0) continue;
                     s.append(subNodes.get(i).toString());
                     s.append(getNodeIndex()).append(" -> ").append(subNodes.get(i).getNodeIndex());
-                    s.append("[label=\"").append(dataDescriptor.getAttributeValues(attributeSplitIndex).get(i)).append("\"]").append(";");
+                    s.append("[label=\"").append(dataDescriptor.getUniqueAttributeValues(attributeSplitIndex).get(i)).append("\"]").append(";");
                     s.append("\n");
                 }
             }

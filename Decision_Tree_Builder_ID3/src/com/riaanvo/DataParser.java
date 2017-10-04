@@ -5,8 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class DataParser {
-    //private String[] attributes;
-    //private ArrayList<ArrayList<String>> uniqueAttributeValues;
     private DataDescriptor dataDescriptor;
     private ArrayList<DataElement> dataSet;
 
