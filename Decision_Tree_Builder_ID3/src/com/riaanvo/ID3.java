@@ -3,26 +3,39 @@ package com.riaanvo;
 import java.util.ArrayList;
 
 public class ID3 {
+
     private static int currentNodeIndex = 0;
-    private final DataDescriptor dataDescriptor;
 
     private Node rootNode;
 
-    public ID3(DataDescriptor dataDescriptor, ArrayList<DataElement> trainingData){
+    private final DataDescriptor dataDescriptor;
+
+    public ID3(DataDescriptor dataDescriptor, ArrayList<DataElement> trainingData) {
         this.dataDescriptor = dataDescriptor;
         buildModel(trainingData);
     }
 
-    private void buildModel(ArrayList<DataElement> trainingData){
+    private void buildModel(ArrayList<DataElement> trainingData) {
         long previousTime = System.currentTimeMillis();
         System.out.print("Building ID3 Tree:");
 
-        rootNode = new Node(trainingData);
+        // Create a string to contain
+        String attributesLeft = "";
+        for (int i = 0; i < dataDescriptor.getNumberOfAttributes(); i++) {
+
+            if (dataDescriptor.getClassAttributeIndex() == i) {
+                attributesLeft += "1";
+            } else {
+                attributesLeft += "0";
+            }
+        }
+
+        rootNode = new Node(trainingData, attributesLeft);
 
         System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
     }
 
-    public String createTreeDiagramScript(){
+    public String createTreeDiagramScript() {
         String s = "";
         s += "digraph Tree {\n" + "node [shape=box, style=\"filled\", color=\"black\"];\n";
         s += rootNode.toString();
@@ -30,7 +43,7 @@ public class ID3 {
         return s;
     }
 
-    public String testDataSet(ArrayList<DataElement> testingData){
+    public String testDataSet(ArrayList<DataElement> testingData) {
         long previousTime = System.currentTimeMillis();
         System.out.print("Testing model:");
 
@@ -39,8 +52,8 @@ public class ID3 {
 
         int[][] confusionMatrix = new int[numberOfClasses][numberOfClasses];
 
-        for(DataElement dataElement: testingData){
-            confusionMatrix[dataElement.getValue(classIndex)][rootNode.determineClass(dataElement)] ++;
+        for (DataElement dataElement : testingData) {
+            confusionMatrix[dataElement.getValue(classIndex)][rootNode.determineClass(dataElement)]++;
         }
 
         System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms\n");
@@ -48,17 +61,17 @@ public class ID3 {
         s.append("Number of samples: ").append(testingData.size()).append("\n");
 
         s.append("Tr \\ Pr\n");
-        for(int r = 0; r < confusionMatrix.length; r++){
-            for(int c = 0; c < confusionMatrix[0].length; c++){
+        for (int r = 0; r < confusionMatrix.length; r++) {
+            for (int c = 0; c < confusionMatrix[0].length; c++) {
                 s.append(confusionMatrix[r][c]).append("\t");
             }
 
-            if(r < confusionMatrix.length - 1) {
+            if (r < confusionMatrix.length - 1) {
                 s.append("\n");
             }
         }
 
-        if(confusionMatrix.length == 2 && confusionMatrix[0].length == 2){
+        if (confusionMatrix.length == 2 && confusionMatrix[0].length == 2) {
             double accuracy = (double) (confusionMatrix[0][0] + confusionMatrix[1][1]) / (double) testingData.size() * 100;
             s.append("\nAccuracy: ").append(accuracy).append("%");
             double errorRate = (double) (confusionMatrix[0][1] + confusionMatrix[1][0]) / (double) testingData.size() * 100;
@@ -78,57 +91,111 @@ public class ID3 {
         return s.toString();
     }
 
-    private class Node{
+
+    /**
+     * The java object that defines the nodes of a decision tree. When a node is created it will try to recursively add
+     * sub nodes to build a decision tree until there are no more samples left undefined or there are no more attributes
+     * to break the data up into.
+     */
+    private class Node {
+
         private final int nodeIndex;
         private int attributeSplitIndex = -1;
-        private double currentSampleEntropy = 1;
+        private double informationGain = 0;
+        private int mostCommonClass;
+
+        private double currentEntropy = 0;
+
         private int sampleCount = 0;
         private int[] classCounts;
-        private int currentClassValue = 0;
         private ArrayList<Node> subNodes;
 
-        public Node(ArrayList<DataElement> samples){
-            //Self assign a node index and increment the value
-            nodeIndex = currentNodeIndex;
-            currentNodeIndex ++;
+        /**
+         * Constructor for creating a node in a decision tree. Functions recursively and will create sub nodes until all
+         * data is split or there are no more attributes to split on.
+         *
+         * @param samples        List of data elements
+         * @param attributesLeft String defining which attributes can be used to split the data
+         */
+        public Node(ArrayList<DataElement> samples, String attributesLeft) {
 
-            determineClassCounts(samples);
+            // Self assign a node index and increment the value
+            nodeIndex = currentNodeIndex++;
 
-            determineMostCommonClass();
-
-            currentSampleEntropy = getEntropy(samples);
-
-            //If there are no samples don't do anything
+            // Get sample count and stop if there are no samples
             sampleCount = samples.size();
-            if(sampleCount == 0) return;
+            if (sampleCount == 0) return;
 
-            //Don't do recursion if there is no more
-            if(isSingleClass()) return;
+            // Count the number of data elements for each class value
+            classCounts = extractClassCounts(samples);
 
-            constructSubNodes(samples);
+            // Determine the class with the most number of samples
+            mostCommonClass = determineMostCommonClass();
+
+            // Determine the current sample entropy for this node
+            currentEntropy = calculateEntropy(samples);
+
+            // Check if this node is a single class and stop recursion
+            if (isSingleClass()) return;
+
+            constructSubNodes(samples, attributesLeft);
         }
 
-        private void determineClassCounts(ArrayList<DataElement> samples){
-            //Generate the current class counts based on the samples
-            classCounts = new int[dataDescriptor.getNumberOfClasses()];
-            for(DataElement dataElement : samples){
-                classCounts[dataElement.getValue(dataDescriptor.getClassAttributeIndex())] ++;
+        /**
+         * Extracts the current number of each class that is present in the given sample.
+         *
+         * @param samples A list of data elements
+         * @return A array of integers containing class value counts
+         */
+        private int[] extractClassCounts(ArrayList<DataElement> samples) {
+
+            int classAttributeIndex = dataDescriptor.getClassAttributeIndex();
+
+            // Count the number of data elements for each class value
+            int[] counts = new int[dataDescriptor.getNumberOfClasses()];
+            for (DataElement dataElement : samples) {
+
+                counts[dataElement.getValue(classAttributeIndex)]++;
             }
+
+            return counts;
         }
 
-        private void determineMostCommonClass(){
+        /**
+         * Returns the class value with the largest number of data samples in it.
+         *
+         * @return The value index for the most common class
+         */
+        private int determineMostCommonClass() {
+
             //Determine the current class with the most values
-            for(int i = 0; i < classCounts.length; i ++){
-                if(classCounts[i] > classCounts[currentClassValue]){
-                    currentClassValue = i;
+            int currentClassIndex = 0;
+            for (int i = 0; i < classCounts.length; i++) {
+
+                //Check if this class has a higher count
+                if (classCounts[i] > classCounts[currentClassIndex]) {
+
+                    currentClassIndex = i;
                 }
             }
+
+            return currentClassIndex;
         }
 
-        private boolean isSingleClass(){
+        /**
+         * Determines if all the sample data elements are of a single class.
+         *
+         * @return If the samples are all a single class
+         */
+        private boolean isSingleClass() {
+
             boolean isSingleClass = false;
             for (int classCount : classCounts) {
+
+                // Check if the number of data elements in this class is not zero
                 if (classCount != 0) {
+
+                    // Check if there is already another class with more than one sample
                     if (!isSingleClass) {
                         isSingleClass = true;
                     } else {
@@ -137,121 +204,245 @@ public class ID3 {
                     }
                 }
             }
+
             return isSingleClass;
         }
 
-        private void constructSubNodes(ArrayList<DataElement> samples){
-            subNodes = new ArrayList<>();
 
-            int largestInfoGain = 0;
+        /**
+         * Creates the sub nodes for this node in the tree. Takes in the current list of samples and the attributes that
+         * can be used to split the data and determines which attribute has the highest information gain.
+         *
+         * @param samples        List of data elements to be split
+         * @param attributesLeft A string describing the attributes that can be used to split the data
+         */
+        private void constructSubNodes(ArrayList<DataElement> samples, String attributesLeft) {
+
+            int largestInfoGainAttributeIndex = 0;
             double currentLargestInfoGain = Double.MIN_VALUE;
-            double infoGain;
 
-            for(int i = 0; i < dataDescriptor.getNumberOfAttributes(); i++){
-                if(i == dataDescriptor.getClassAttributeIndex()) continue;
+            // If there are no more attributes to split on, stop
+            if (!attributesLeft.contains("0")) return;
 
-                infoGain = getInfoGain(samples, i);
-                if(infoGain > currentLargestInfoGain){
+            for (int i = 0; i < dataDescriptor.getNumberOfAttributes(); i++) {
+
+                // Don't attempt to check information gain on a previously used attribute
+                if (attributesLeft.charAt(i) == '1') continue;
+
+                // Calculate information gain for this attribute index
+                double infoGain = calculateInformationGain(samples, i);
+
+                // Check if the new information gain is larger than before
+                if (infoGain > currentLargestInfoGain) {
                     currentLargestInfoGain = infoGain;
-                    largestInfoGain = i;
+                    largestInfoGainAttributeIndex = i;
                 }
             }
 
-            attributeSplitIndex = largestInfoGain;
+            // Store the information gain for this attribute split
+            informationGain = currentLargestInfoGain;
+
+            // Use the attribute which gives the largest information gain to split the data
+            attributeSplitIndex = largestInfoGainAttributeIndex;
+
+            // Mark the split attribute as used
+            StringBuilder newAttributesLeft = new StringBuilder(attributesLeft);
+            newAttributesLeft.setCharAt(attributeSplitIndex, '1');
+
+            // Break up the samples based on that attribute
             ArrayList<ArrayList<DataElement>> valueSubsets = getSubSets(samples, attributeSplitIndex);
 
+            // For each subset of the samples create a new node
+            subNodes = new ArrayList<>();
             for (ArrayList<DataElement> valueSubset : valueSubsets) {
-                subNodes.add(new Node(valueSubset));
+                Node node = new Node(valueSubset, newAttributesLeft.toString());
+
+                // If there are no samples in the subset use the parents most common class value
+                if (valueSubset.size() == 0) {
+                    node.setMostCommonClass(mostCommonClass);
+                }
+
+                subNodes.add(node);
             }
         }
 
-        private double getInfoGain(ArrayList<DataElement> samples, int attributeIndex){
-            int sampleSize = samples.size();
-            double sampleEntropy = getEntropy(samples);
+        /**
+         * This function calculates the information gain for splitting the samples using a specific attribute.
+         *
+         * @param samples        List of data elements
+         * @param attributeIndex Attribute to split and calculate information gain
+         * @return The information gain of this split
+         */
+        private double calculateInformationGain(ArrayList<DataElement> samples, int attributeIndex) {
 
-            //Create subsets of the values
+            // Create subsets of the values based of the attribute to split on
             ArrayList<ArrayList<DataElement>> valueSubsets = getSubSets(samples, attributeIndex);
 
+            // Sum up the weighted entropy for all the sub sets
             double subSetEntropySum = 0;
-
             for (ArrayList<DataElement> valueSubset : valueSubsets) {
+
+                // If the sub set does not have any samples skip it
                 if (valueSubset.size() == 0) continue;
-                subSetEntropySum += ((double) valueSubset.size() / (double) sampleSize) * getEntropy(valueSubset);
+
+                // Add the weighted entropy of the subset to the overall split entropy
+                subSetEntropySum += ((double) valueSubset.size() / (double) sampleCount) * calculateEntropy(valueSubset);
             }
 
-            return sampleEntropy - subSetEntropySum;
+            return currentEntropy - subSetEntropySum;
         }
 
-        private double getEntropy(ArrayList<DataElement> samples){
-            int classIndex = dataDescriptor.getClassAttributeIndex();
+
+        /**
+         * Calculates the current entropy of the provided data set based on the class attribute.
+         *
+         * @param samples List of data elements
+         * @return The entropy of the data set
+         */
+        private double calculateEntropy(ArrayList<DataElement> samples) {
+
+            // Determine the number of samples in this data set
             int sampleSize = samples.size();
-            int[] classValueCounts = new int[dataDescriptor.getUniqueAttributeValues(classIndex).size()];
 
-            //Count the number of data elements for each attribute value
-            for(DataElement dataElement: samples){
-                classValueCounts[dataElement.getValue(classIndex)] ++;
-            }
+            // Create an array to store the class counts for this data set
+            int[] classValueCounts = extractClassCounts(samples);
 
+            // Sum up the entropy for this sample
             double ent = 0;
             for (int classValueCount : classValueCounts) {
+
+                // Calculate the probability of this class
                 double p_ = (double) classValueCount / (double) sampleSize;
+
+                // If the probability is zero skip this value to prevent math errors
                 if (p_ == 0) continue;
+
+                // Calculate the entropy to be added
                 ent += -p_ * Math.log(p_);
             }
 
             return ent;
         }
 
-        private ArrayList<ArrayList<DataElement>> getSubSets(ArrayList<DataElement> samples, int attributeIndex){
+        /**
+         * Returns a list of split data sets based on the provided attribute.
+         *
+         * @param samples        List of data samples to split
+         * @param attributeIndex Attribute to split the data set on
+         * @return A split list of data samples
+         */
+        private ArrayList<ArrayList<DataElement>> getSubSets(ArrayList<DataElement> samples, int attributeIndex) {
+
+            // Create a list to hold all the sub lists
             ArrayList<ArrayList<DataElement>> valueSubsets = new ArrayList<>();
-            for(int i = 0; i < dataDescriptor.getUniqueAttributeValues(attributeIndex).size(); i++){
+            for (int i = 0; i < dataDescriptor.getUniqueAttributeValues(attributeIndex).size(); i++) {
                 valueSubsets.add(new ArrayList<>());
             }
 
-            //Populate the subSets
-            for(DataElement dataElement: samples){
+            // Populate the sub lists with the data elements
+            for (DataElement dataElement : samples) {
                 valueSubsets.get(dataElement.getValue(attributeIndex)).add(dataElement);
             }
 
             return valueSubsets;
         }
 
-        private int getNodeIndex(){
-            return nodeIndex;
-        }
 
-        private int getSampleCount(){
-            return sampleCount;
-        }
+        /**
+         * Determines the class value for the provided data element based on the tree structure. Functions recursively
+         * and will go through the tree until there are no more sub nodes.
+         *
+         * @param dataElement The data element to be classified
+         * @return The class classification for this data element
+         */
+        private int determineClass(DataElement dataElement) {
 
-        private int determineClass(DataElement dataElement){
-            if(subNodes == null) return currentClassValue;
+            // If this is a leaf node return the most common class value
+            if (subNodes == null) return mostCommonClass;
+
+            // Use the sub nodes to determine the most common class value
             return subNodes.get(dataElement.getValue(attributeSplitIndex)).determineClass(dataElement);
         }
 
-        public String toString(){
+        /**
+         * Sets the most common class value. Used for sub nodes with no samples to determine themselves.
+         *
+         * @param mostCommonClass The most common class value
+         */
+        private void setMostCommonClass(int mostCommonClass) {
+            this.mostCommonClass = mostCommonClass;
+        }
+
+        /**
+         * Gets the node index used for defining the tree structure.
+         *
+         * @return Node index
+         */
+        private int getNodeIndex() {
+
+            return nodeIndex;
+        }
+
+        /**
+         * Gets the sample count at this node.
+         *
+         * @return Sample count for this node
+         */
+        private int getSampleCount() {
+
+            return sampleCount;
+        }
+
+        /**
+         * Returns the string describing the node and its connections to the sub nodes.
+         *
+         * @return A string structure of the node and sub nodes
+         */
+        public String toString() {
+
             StringBuilder s = new StringBuilder();
+
+            // Add all the information describing this node to the string
             s.append(nodeIndex).append(" [label=\"");
-            s.append("Split on: ").append(dataDescriptor.getAttribute(attributeSplitIndex)).append("\\n");
-            s.append("Entropy = ").append(currentSampleEntropy).append("\\n");
+
+            // If this node is a leaf node don't display split and information gain
+            if (attributeSplitIndex != -1) {
+
+                s.append("Split on: ").append(dataDescriptor.getAttribute(attributeSplitIndex)).append("\\n");
+                s.append("Information gain = ").append(String.format("%.3f", informationGain)).append("\\n");
+            }
+            s.append("Current Entropy = ").append(String.format("%.3f", currentEntropy)).append("\\n");
             s.append("Samples: ").append(sampleCount).append("\\n");
             s.append("Class counts: [");
-            for(int i = 0; i < classCounts.length; i ++){
+
+            for (int i = 0; i < classCounts.length; i++) {
+
                 s.append(classCounts[i]);
-                if(i < classCounts.length - 1){
-                    s.append(",");
+
+                // If this is not the last class count separate it by a ','
+                if (i < classCounts.length - 1) {
+                    s.append(", ");
                 }
             }
+
             s.append("]\\n");
-            s.append("Class: ").append(dataDescriptor.getUniqueAttributeValues(dataDescriptor.getClassAttributeIndex()).get(currentClassValue)).append("\"");
+            s.append("Class: ").append(dataDescriptor.getUniqueAttributeValues(dataDescriptor.getClassAttributeIndex()).get(mostCommonClass)).append("\"");
             s.append(", fillcolor=\"#" + 11111103 + "\"];\n");
-            if(subNodes != null){
-                for (int i = 0; i < subNodes.size(); i++ ) {
-                    if(subNodes.get(i).getSampleCount() == 0) continue;
-                    s.append(subNodes.get(i).toString());
+
+            // Add all sub nodes to the string including their node connections
+            if (subNodes != null) {
+                for (int i = 0; i < subNodes.size(); i++) {
+
+                    // If the sub node sample count is 0 do not include it in the print out
+                    if (subNodes.get(i).getSampleCount() == 0) continue;
+
+                    // Add the node linking description
                     s.append(getNodeIndex()).append(" -> ").append(subNodes.get(i).getNodeIndex());
                     s.append("[label=\"").append(dataDescriptor.getUniqueAttributeValues(attributeSplitIndex).get(i)).append("\"]").append(";");
                     s.append("\n");
+
+                    // Add the sub nodes text
+                    s.append(subNodes.get(i).toString());
                 }
             }
 
