@@ -2,66 +2,117 @@ package com.riaanvo;
 
 import java.util.ArrayList;
 
+/**
+ * This class contains the ID3 model and allows the testing and printing of the model.
+ */
 public class ID3 {
 
+    //Used for determining the decision tree structure
     private static int currentNodeIndex = 0;
 
+    private final DataDescriptor dataDescriptor;
     private Node rootNode;
 
-    private final DataDescriptor dataDescriptor;
-
+    /**
+     * Constructor for the ID3 model. It takes in the data descriptor for the data set as well as the training data,
+     * it then creates the model and stores the structure.
+     *
+     * @param dataDescriptor Data descriptor for the data set
+     * @param trainingData   Training data elements used to build the model
+     */
     public ID3(DataDescriptor dataDescriptor, ArrayList<DataElement> trainingData) {
+
         this.dataDescriptor = dataDescriptor;
         buildModel(trainingData);
     }
 
+    /**
+     * This method builds the ID3 model using the provided training data.
+     *
+     * @param trainingData List of data elements in the training data set
+     */
     private void buildModel(ArrayList<DataElement> trainingData) {
+
+        // Store the starting time of model construction
         long previousTime = System.currentTimeMillis();
         System.out.print("Building ID3 Tree:");
 
-        // Create a string to contain
-        String attributesLeft = "";
+        // Reset node indexing if a new model is built
+        currentNodeIndex = 0;
+
+        // Create a string to contain indicators of which attributes have been used
+        StringBuilder attributesLeft = new StringBuilder();
         for (int i = 0; i < dataDescriptor.getNumberOfAttributes(); i++) {
 
+            // If the index is the class attribute set it to one
             if (dataDescriptor.getClassAttributeIndex() == i) {
-                attributesLeft += "1";
+                attributesLeft.append("1");
             } else {
-                attributesLeft += "0";
+                attributesLeft.append("0");
             }
         }
 
-        rootNode = new Node(trainingData, attributesLeft);
+        // Create and store the root node of the model. This will recursively construct the decision tree
+        rootNode = new Node(trainingData, attributesLeft.toString());
 
         System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
     }
 
+    /**
+     * Creates a string containing the script used to display a decision tree model using graphviz.
+     *
+     * @return The ID3 model as a script
+     */
     public String createTreeDiagramScript() {
+
         String s = "";
-        s += "digraph Tree {\n" + "node [shape=box, style=\"filled\", color=\"black\"];\n";
+        s += "digraph Tree {\nnode [shape=box, style=\"filled\", color=\"black\"];\n";
         s += rootNode.toString();
         s += "}";
         return s;
     }
 
-    public String testDataSet(ArrayList<DataElement> testingData) {
+    /**
+     * Tests the model with the provided data set and returns a string containing the confusion matrix and
+     * accuracy statistics based on the test data set.
+     *
+     * @param testDataSet List of data elements
+     * @return A string containing the test results
+     */
+    public String testModel(ArrayList<DataElement> testDataSet) {
+
+        // Store the start time of testing
         long previousTime = System.currentTimeMillis();
         System.out.print("Testing model:");
 
         int numberOfClasses = dataDescriptor.getNumberOfClasses();
         int classIndex = dataDescriptor.getClassAttributeIndex();
 
+        // Loop through all the data elements and increment counters in the confusion matrix
         int[][] confusionMatrix = new int[numberOfClasses][numberOfClasses];
-
-        for (DataElement dataElement : testingData) {
+        for (DataElement dataElement : testDataSet) {
             confusionMatrix[dataElement.getValue(classIndex)][rootNode.determineClass(dataElement)]++;
         }
 
+        // Display the time taken to test the data set
         System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms\n");
-        StringBuilder s = new StringBuilder();
-        s.append("Number of samples: ").append(testingData.size()).append("\n");
 
-        s.append("Tr \\ Pr\n");
+        StringBuilder s = new StringBuilder();
+        s.append("Number of samples: ").append(testDataSet.size()).append("\n");
+
+        // Display the confusion matrix
+        s.append("Tr \\ Pr\n\t");
+
+        // Display hypothesis cases
+        for (int h = 0; h < confusionMatrix.length; h++) {
+            s.append("H").append(h).append("\t");
+        }
+        s.append("\n");
+
+        // Display the confusion matrix values
         for (int r = 0; r < confusionMatrix.length; r++) {
+            s.append("H").append(r).append("\t");
+
             for (int c = 0; c < confusionMatrix[0].length; c++) {
                 s.append(confusionMatrix[r][c]).append("\t");
             }
@@ -71,22 +122,54 @@ public class ID3 {
             }
         }
 
-        if (confusionMatrix.length == 2 && confusionMatrix[0].length == 2) {
-            double accuracy = (double) (confusionMatrix[0][0] + confusionMatrix[1][1]) / (double) testingData.size() * 100;
+        // If there are only two classes display the accuracy statistics
+        if (dataDescriptor.getNumberOfClasses() == 2) {
+            s.append("\n\nAccuracy Statistics:");
+
+            double accuracy = (double) (confusionMatrix[0][0] + confusionMatrix[1][1]) / (double) testDataSet.size() * 100;
             s.append("\nAccuracy: ").append(accuracy).append("%");
-            double errorRate = (double) (confusionMatrix[0][1] + confusionMatrix[1][0]) / (double) testingData.size() * 100;
+
+            double errorRate = (double) (confusionMatrix[0][1] + confusionMatrix[1][0]) / (double) testDataSet.size() * 100;
             s.append("\nError Rate: ").append(errorRate).append("%");
+
             double FAR = (double) (confusionMatrix[0][1]) / (double) (confusionMatrix[0][1] + confusionMatrix[0][0]) * 100;
             s.append("\nFalse Alarm Rate: ").append(FAR).append("%");
+
             double DR = (double) (confusionMatrix[1][1]) / (double) (confusionMatrix[1][1] + confusionMatrix[1][0]) * 100;
             s.append("\nDetection Rate: ").append(DR).append("%");
+
             double precision = (double) (confusionMatrix[1][1]) / (double) (confusionMatrix[0][1] + confusionMatrix[1][1]) * 100;
             s.append("\nPrecision: ").append(precision).append("%");
+
             double recall = DR;
             s.append("\nRecall: ").append(recall).append("%");
+
             double F1 = 2 * precision * recall / (precision + recall);
             s.append("\nF1 score: ").append(F1).append("%");
         }
+
+        return s.toString();
+    }
+
+    /**
+     * Takes in a data set and predicts the class for each data value
+     *
+     * @param dataSet List of data elements
+     * @return A string containing all the predicted values
+     */
+    public String predictClasses(ArrayList<DataElement> dataSet) {
+        StringBuilder s = new StringBuilder();
+        s.append("Predicted Values:\n");
+
+        long previousTime = System.currentTimeMillis();
+        System.out.print("Predicting Values:");
+
+        for (DataElement dataElement : dataSet) {
+            s.append(rootNode.determineClass(dataElement)).append("\n");
+        }
+
+        // Display the time taken to predict the data set
+        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms\n");
 
         return s.toString();
     }
@@ -96,6 +179,26 @@ public class ID3 {
      * The java object that defines the nodes of a decision tree. When a node is created it will try to recursively add
      * sub nodes to build a decision tree until there are no more samples left undefined or there are no more attributes
      * to break the data up into.
+     * <p>
+     * This class provides the implementation of the following algorithm
+     * ID3 (Examples, Target_Attribute, Attributes)
+     * Create a root node for the tree
+     * If all examples are positive, Return the single-node tree Root, with label = +.
+     * If all examples are negative, Return the single-node tree Root, with label = -.
+     * If number of predicting attributes is empty, then Return the single node tree Root,
+     * with label = most common value of the target attribute in the examples.
+     * <p>
+     * Otherwise Begin
+     * A ← The Attribute that best classifies examples.
+     * Decision Tree attribute for Root = A.
+     * For each possible value, vi, of A,
+     * Add a new tree branch below Root, corresponding to the test A = vi.
+     * Let Examples(vi) be the subset of examples that have the value vi for A
+     * If Examples(vi) is empty
+     * Then below this new branch add a leaf node with label = most common target value in the examples
+     * Else below this new branch add the subtree ID3 (Examples(vi), Target_Attribute, Attributes – {A})
+     * End
+     * Return Root
      */
     private class Node {
 
@@ -208,7 +311,6 @@ public class ID3 {
             return isSingleClass;
         }
 
-
         /**
          * Creates the sub nodes for this node in the tree. Takes in the current list of samples and the attributes that
          * can be used to split the data and determines which attribute has the highest information gain.
@@ -292,7 +394,6 @@ public class ID3 {
             return currentEntropy - subSetEntropySum;
         }
 
-
         /**
          * Calculates the current entropy of the provided data set based on the class attribute.
          *
@@ -346,7 +447,6 @@ public class ID3 {
 
             return valueSubsets;
         }
-
 
         /**
          * Determines the class value for the provided data element based on the tree structure. Functions recursively
@@ -450,24 +550,3 @@ public class ID3 {
         }
     }
 }
-
-
-/*
-  ID3 (Examples, Target_Attribute, Attributes)
-    Create a root node for the tree
-    If all examples are positive, Return the single-node tree Root, with label = +.
-    If all examples are negative, Return the single-node tree Root, with label = -.
-    If number of predicting attributes is empty, then Return the single node tree Root,
-    with label = most common value of the target attribute in the examples.
-    Otherwise Begin
-        A ← The Attribute that best classifies examples.
-        Decision Tree attribute for Root = A.
-        For each possible value, vi, of A,
-            Add a new tree branch below Root, corresponding to the test A = vi.
-            Let Examples(vi) be the subset of examples that have the value vi for A
-            If Examples(vi) is empty
-                Then below this new branch add a leaf node with label = most common target value in the examples
-            Else below this new branch add the subtree ID3 (Examples(vi), Target_Attribute, Attributes – {A})
-    End
-    Return Root
-*/

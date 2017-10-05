@@ -13,7 +13,7 @@ public class Main {
         ID3 id3Tree = new ID3(trainingDataParser.getDataDescriptor(), trainingDataParser.getDataSet());
         System.out.println();
 
-        System.out.println(id3Tree.testDataSet(testingDataParser.getDataSet()) + "\n");
+        System.out.println(id3Tree.testModel(testingDataParser.getDataSet()) + "\n");
 
         System.out.println(id3Tree.createTreeDiagramScript());
 
