@@ -27,7 +27,7 @@ public class DataParser {
         this.dataDescriptor = dataDescriptor;
         long previousTime = System.currentTimeMillis();
 
-        System.out.println("To load: " + filePath);
+        System.out.println("File to load: " + filePath);
         System.out.print("Loading data set:");
 
         // Extract out the contents of the file

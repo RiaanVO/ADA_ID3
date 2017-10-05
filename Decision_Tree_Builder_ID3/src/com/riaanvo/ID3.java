@@ -101,7 +101,7 @@ public class ID3 {
         s.append("Number of samples: ").append(testDataSet.size()).append("\n");
 
         // Display the confusion matrix
-        s.append("Tr \\ Pr\n\t");
+        s.append("True Class \\ Predicted Class\n \\\t");
 
         // Display hypothesis cases
         for (int h = 0; h < confusionMatrix.length; h++) {
@@ -165,7 +165,8 @@ public class ID3 {
         System.out.print("Predicting Values:");
 
         for (DataElement dataElement : dataSet) {
-            s.append(rootNode.determineClass(dataElement)).append("\n");
+            String value = dataDescriptor.indexToValue(dataDescriptor.getClassAttributeIndex(), rootNode.determineClass(dataElement));
+            s.append(value).append("\n");
         }
 
         // Display the time taken to predict the data set
@@ -187,7 +188,6 @@ public class ID3 {
      * If all examples are negative, Return the single-node tree Root, with label = -.
      * If number of predicting attributes is empty, then Return the single node tree Root,
      * with label = most common value of the target attribute in the examples.
-     * <p>
      * Otherwise Begin
      * A ← The Attribute that best classifies examples.
      * Decision Tree attribute for Root = A.
