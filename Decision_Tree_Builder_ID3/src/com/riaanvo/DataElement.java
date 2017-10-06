@@ -37,6 +37,15 @@ public class DataElement {
     }
 
     /**
+     * This returns the data descriptor used for all data elements
+     * @return The data descriptor used for data elements
+     */
+    public static DataDescriptor getDataDescriptor() {
+
+        return dataDescriptor;
+    }
+
+    /**
      * Gets the index value for the desired attribute index
      * @param attributeIndex Attribute index of the desired value
      * @return The index value for that attribute

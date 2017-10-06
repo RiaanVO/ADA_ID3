@@ -22,9 +22,9 @@ public class ID3 {
              * @param dataDescriptor Data descriptor for the data set
              * @param trainingData   Training data elements used to build the model
              */
-    public ID3(DataDescriptor dataDescriptor, ArrayList<DataElement> trainingData, int maxNodeDepth) {
+    public ID3(ArrayList<DataElement> trainingData, int maxNodeDepth) {
 
-        this.dataDescriptor = dataDescriptor;
+        this.dataDescriptor = DataElement.getDataDescriptor();
         this.maxNodeDepth = maxNodeDepth;
         buildModel(trainingData);
     }

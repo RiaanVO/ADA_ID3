@@ -22,12 +22,12 @@ public class Main {
 
         int nodeDepth = -1;
         boolean binarise = true;
-        boolean hasTestData = true;
-        boolean hasPredictionData = true;
+        boolean hasTestData = false;
+        boolean hasPredictionData = false;
+
         boolean writeOutTreeStructure = false;
         boolean writeOutAnalysis = false;
         boolean writeOutPredictions = false;
-
 
         DataParser trainingDataParser = new DataParser(trainFile, null);
         dataDescriptor = trainingDataParser.getDataDescriptor();
@@ -63,11 +63,9 @@ public class Main {
                 predictDataSet = predictPreProcessor.getDataSet();
                 System.out.println();
             }
-
-            dataDescriptor = newDataDescriptor;
         }
 
-        ID3 id3Tree = new ID3(dataDescriptor, trainDataSet, nodeDepth);
+        ID3 id3Tree = new ID3(trainDataSet, nodeDepth);
         System.out.println();
 
         if(hasTestData) {
