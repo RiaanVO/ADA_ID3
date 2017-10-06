@@ -8,22 +8,27 @@ public class CategoricalDataPreprocessor {
     private ArrayList<DataElement> dataSet;
 
     public CategoricalDataPreprocessor(ArrayList<DataElement> oldDataSet, DataDescriptor oldDataDescriptor, DataDescriptor newDataDescriptor){
+        long previousTime = System.currentTimeMillis();
+
 
         if(newDataDescriptor == null){
+            System.out.print("Defining new data descriptor:");
+
             dataDescriptor = new DataDescriptor(createNewHeaders(oldDataDescriptor));
+            enterUniqueValues(oldDataDescriptor);
+
+            System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
+
         } else {
             dataDescriptor = newDataDescriptor;
         }
 
-        enterUniqueValues(oldDataDescriptor);
+        previousTime = System.currentTimeMillis();
+        System.out.print("Converting data set:");
+
         dataSet = convertToNewDataSet(oldDataDescriptor, oldDataSet);
 
-        //System.out.println(dataDescriptor.getNumberOfAttributes());
-        //System.out.println(dataSet.get(0).toStringInts());
-
-        //displayDataSet(10);
-
-        //System.out.println(dataDescriptor.toString());
+        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
     }
 
     private String[] createNewHeaders(DataDescriptor baseDataDescriptor){
