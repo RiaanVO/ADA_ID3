@@ -2,6 +2,7 @@ package com.riaanvo;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.util.ArrayList;
 
 
 /**
@@ -10,19 +11,40 @@ import java.io.FileWriter;
 public class Main {
 
     public static void main(String[] args) {
-        DataParser trainingDataParser = new DataParser("/Users/riaanvo/ADA_ID3/ADA_A2/mushroom-train(1).csv", null);
-        System.out.println();
+        String trainFile  = "/Users/riaanvo/ADA_ID3/ADA_A2/mushroom-train(1).csv";
+        String testFile = "/Users/riaanvo/ADA_ID3/ADA_A2/mushroom-test(1).csv";
+        boolean binarise = true;
+        int nodeDepth = -1;
 
-        DataParser testingDataParser = new DataParser("/Users/riaanvo/ADA_ID3/ADA_A2/mushroom-test(1).csv", trainingDataParser.getDataDescriptor());
-        System.out.println();
+        DataDescriptor dataDescriptor;
+        ArrayList<DataElement> trainDataSet;
+        ArrayList<DataElement> testDataSet;
 
-        ID3 id3Tree = new ID3(trainingDataParser.getDataDescriptor(), trainingDataParser.getDataSet());
 
-        System.out.println(id3Tree.testModel(testingDataParser.getDataSet()) + "\n");
 
-        System.out.println(id3Tree.predictClasses(testingDataParser.getDataSet()) + "\n");
+        DataParser trainingDataParser = new DataParser(trainFile, null);
+        dataDescriptor = trainingDataParser.getDataDescriptor();
+        trainDataSet = trainingDataParser.getDataSet();
+        DataParser testingDataParser = new DataParser(testFile, dataDescriptor);
+        testDataSet = testingDataParser.getDataSet();
 
-        System.out.println(id3Tree.createTreeDiagramScript());
+        if(binarise){
+            CategoricalDataPreprocessor trainPreProcessor = new CategoricalDataPreprocessor(trainDataSet, dataDescriptor, null);
+            DataDescriptor newDataDescriptor = trainPreProcessor.getDataDescriptor();
+            trainDataSet = trainPreProcessor.getDataSet();
+
+            CategoricalDataPreprocessor testPreProcessor = new CategoricalDataPreprocessor(testDataSet, dataDescriptor, newDataDescriptor);
+            testDataSet = testPreProcessor.getDataSet();
+            dataDescriptor = newDataDescriptor;
+        }
+
+
+        ID3 id3Tree = new ID3(dataDescriptor, trainDataSet, nodeDepth);
+
+        System.out.println("\n" + id3Tree.createTreeDiagramScript());
+        System.out.println(id3Tree.testModel(testDataSet) + "\n");
+
+        //System.out.println(id3Tree.predictClasses(testPreProcessor.getDataSet()) + "\n");
 
     }
 

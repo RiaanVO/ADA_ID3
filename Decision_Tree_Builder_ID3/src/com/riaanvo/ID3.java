@@ -8,21 +8,24 @@ import java.util.ArrayList;
 public class ID3 {
 
     //Used for determining the decision tree structure
-    private static int currentNodeIndex = 0;
+    private int currentNodeIndex = 0;
+    private int maxNodeDepth;
 
     private final DataDescriptor dataDescriptor;
     private Node rootNode;
+    private String decFormat = "%.3f";
 
-    /**
-     * Constructor for the ID3 model. It takes in the data descriptor for the data set as well as the training data,
-     * it then creates the model and stores the structure.
-     *
-     * @param dataDescriptor Data descriptor for the data set
-     * @param trainingData   Training data elements used to build the model
-     */
-    public ID3(DataDescriptor dataDescriptor, ArrayList<DataElement> trainingData) {
+            /**
+             * Constructor for the ID3 model. It takes in the data descriptor for the data set as well as the training data,
+             * it then creates the model and stores the structure.
+             *
+             * @param dataDescriptor Data descriptor for the data set
+             * @param trainingData   Training data elements used to build the model
+             */
+    public ID3(DataDescriptor dataDescriptor, ArrayList<DataElement> trainingData, int maxNodeDepth) {
 
         this.dataDescriptor = dataDescriptor;
+        this.maxNodeDepth = maxNodeDepth;
         buildModel(trainingData);
     }
 
@@ -53,7 +56,7 @@ public class ID3 {
         }
 
         // Create and store the root node of the model. This will recursively construct the decision tree
-        rootNode = new Node(trainingData, attributesLeft.toString());
+        rootNode = new Node(trainingData, attributesLeft.toString(), 0);
 
         System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
     }
@@ -127,25 +130,25 @@ public class ID3 {
             s.append("\n\nAccuracy Statistics:");
 
             double accuracy = (double) (confusionMatrix[0][0] + confusionMatrix[1][1]) / (double) testDataSet.size() * 100;
-            s.append("\nAccuracy: ").append(accuracy).append("%");
+            s.append("\nAccuracy: ").append(String.format(decFormat, accuracy)).append("%");
 
             double errorRate = (double) (confusionMatrix[0][1] + confusionMatrix[1][0]) / (double) testDataSet.size() * 100;
-            s.append("\nError Rate: ").append(errorRate).append("%");
+            s.append("\nError Rate: ").append(String.format(decFormat, errorRate)).append("%");
 
             double FAR = (double) (confusionMatrix[0][1]) / (double) (confusionMatrix[0][1] + confusionMatrix[0][0]) * 100;
-            s.append("\nFalse Alarm Rate: ").append(FAR).append("%");
+            s.append("\nFalse Alarm Rate: ").append(String.format(decFormat, FAR)).append("%");
 
             double DR = (double) (confusionMatrix[1][1]) / (double) (confusionMatrix[1][1] + confusionMatrix[1][0]) * 100;
-            s.append("\nDetection Rate: ").append(DR).append("%");
+            s.append("\nDetection Rate: ").append(String.format(decFormat, DR)).append("%");
 
             double precision = (double) (confusionMatrix[1][1]) / (double) (confusionMatrix[0][1] + confusionMatrix[1][1]) * 100;
-            s.append("\nPrecision: ").append(precision).append("%");
+            s.append("\nPrecision: ").append(String.format(decFormat, precision)).append("%");
 
             double recall = DR;
-            s.append("\nRecall: ").append(recall).append("%");
+            s.append("\nRecall: ").append(String.format(decFormat, recall)).append("%");
 
             double F1 = 2 * precision * recall / (precision + recall);
-            s.append("\nF1 score: ").append(F1).append("%");
+            s.append("\nF1 score: ").append(String.format(decFormat, F1)).append("%");
         }
 
         return s.toString();
@@ -220,7 +223,7 @@ public class ID3 {
          * @param samples        List of data elements
          * @param attributesLeft String defining which attributes can be used to split the data
          */
-        public Node(ArrayList<DataElement> samples, String attributesLeft) {
+        public Node(ArrayList<DataElement> samples, String attributesLeft, int nodeDepth) {
 
             // Self assign a node index and increment the value
             nodeIndex = currentNodeIndex++;
@@ -241,7 +244,10 @@ public class ID3 {
             // Check if this node is a single class and stop recursion
             if (isSingleClass()) return;
 
-            constructSubNodes(samples, attributesLeft);
+            // Stop if the max node depth is reached
+            if(nodeDepth >= maxNodeDepth && maxNodeDepth != -1) return;
+
+            constructSubNodes(samples, attributesLeft, nodeDepth);
         }
 
         /**
@@ -318,7 +324,7 @@ public class ID3 {
          * @param samples        List of data elements to be split
          * @param attributesLeft A string describing the attributes that can be used to split the data
          */
-        private void constructSubNodes(ArrayList<DataElement> samples, String attributesLeft) {
+        private void constructSubNodes(ArrayList<DataElement> samples, String attributesLeft, int currentNodeDepth) {
 
             int largestInfoGainAttributeIndex = 0;
             double currentLargestInfoGain = Double.MIN_VALUE;
@@ -357,7 +363,7 @@ public class ID3 {
             // For each subset of the samples create a new node
             subNodes = new ArrayList<>();
             for (ArrayList<DataElement> valueSubset : valueSubsets) {
-                Node node = new Node(valueSubset, newAttributesLeft.toString());
+                Node node = new Node(valueSubset, newAttributesLeft.toString(), currentNodeDepth + 1);
 
                 // If there are no samples in the subset use the parents most common class value
                 if (valueSubset.size() == 0) {
@@ -509,22 +515,23 @@ public class ID3 {
             if (attributeSplitIndex != -1) {
 
                 s.append("Split on: ").append(dataDescriptor.getAttribute(attributeSplitIndex)).append("\\n");
-                s.append("Information gain = ").append(String.format("%.3f", informationGain)).append("\\n");
+                s.append("Information gain = ").append(String.format(decFormat, informationGain)).append("\\n");
             }
-            s.append("Current Entropy = ").append(String.format("%.3f", currentEntropy)).append("\\n");
+            s.append("Current Entropy = ").append(String.format(decFormat, currentEntropy)).append("\\n");
             s.append("Samples: ").append(sampleCount).append("\\n");
             s.append("Class counts: [");
 
-            for (int i = 0; i < classCounts.length; i++) {
+            if(classCounts != null) {
+                for (int i = 0; i < classCounts.length; i++) {
 
-                s.append(classCounts[i]);
+                    s.append(classCounts[i]);
 
-                // If this is not the last class count separate it by a ','
-                if (i < classCounts.length - 1) {
-                    s.append(", ");
+                    // If this is not the last class count separate it by a ','
+                    if (i < classCounts.length - 1) {
+                        s.append(", ");
+                    }
                 }
             }
-
             s.append("]\\n");
             s.append("Class: ").append(dataDescriptor.getUniqueAttributeValues(dataDescriptor.getClassAttributeIndex()).get(mostCommonClass)).append("\"");
             s.append(", fillcolor=\"#" + 11111103 + "\"];\n");
