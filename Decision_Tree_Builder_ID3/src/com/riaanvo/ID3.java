@@ -548,7 +548,7 @@ public class ID3 {
                     s.append("\n");
 
                     // Add the sub nodes text
-                    s.append(subNodes.get(i).toString());
+                    s.append(subNodes.get(i).toString(showEmptyLeaves));
                 }
             }
 
