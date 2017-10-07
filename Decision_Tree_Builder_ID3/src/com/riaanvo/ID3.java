@@ -57,7 +57,7 @@ public class ID3 {
         // Create and store the root node of the model. This will recursively construct the decision tree
         rootNode = new Node(trainingData, attributesLeft.toString(), 0);
 
-        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
+        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms\n");
     }
 
     /**
@@ -65,11 +65,11 @@ public class ID3 {
      *
      * @return The ID3 model as a script
      */
-    public String createTreeDiagramScript() {
+    public String createTreeDiagramScript(boolean showEmptyLeaves) {
 
         String s = "";
         s += "digraph Tree {\nnode [shape=box, style=\"filled\", color=\"black\"];\n";
-        s += rootNode.toString();
+        s += rootNode.toString(showEmptyLeaves);
         s += "}\n";
         return s;
     }
@@ -503,7 +503,7 @@ public class ID3 {
          *
          * @return A string structure of the node and sub nodes
          */
-        public String toString() {
+        public String toString(boolean showEmptyLeaves) {
 
             StringBuilder s = new StringBuilder();
 
@@ -540,7 +540,7 @@ public class ID3 {
                 for (int i = 0; i < subNodes.size(); i++) {
 
                     // If the sub node sample count is 0 do not include it in the print out
-                    if (subNodes.get(i).getSampleCount() == 0) continue;
+                    if (subNodes.get(i).getSampleCount() == 0 && !showEmptyLeaves) continue;
 
                     // Add the node linking description
                     s.append(getNodeIndex()).append(" -> ").append(subNodes.get(i).getNodeIndex());

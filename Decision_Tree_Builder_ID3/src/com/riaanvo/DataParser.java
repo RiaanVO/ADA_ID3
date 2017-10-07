@@ -44,7 +44,8 @@ public class DataParser {
         String[] rows = trainingCSVText.split("\n");
         extractDataSet(rows, dataDescriptor);
 
-        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
+        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms\n");
+
     }
 
 
@@ -133,29 +134,5 @@ public class DataParser {
     public ArrayList<DataElement> getDataSet() {
 
         return dataSet;
-    }
-
-    /**
-     * Displays the first desired number of data elements from the data set and the data descriptor if there is one.
-     *
-     * @param numberOfElementsToShow The number of data elements to display
-     */
-    public void displayDataSet(int numberOfElementsToShow) {
-
-        StringBuilder s = new StringBuilder();
-
-        //Check if the data descriptor is null and add the output if it is not
-        if (dataDescriptor != null) {
-
-            s.append(dataDescriptor.toString());
-        }
-
-        // Print out the desired number of rows of data
-        s.append("\n\nData output\n");
-        for (int i = 0; i < numberOfElementsToShow; i++) {
-
-            s.append(dataSet.get(i).toString()).append("\n");
-        }
-        System.out.println(s.toString());
     }
 }

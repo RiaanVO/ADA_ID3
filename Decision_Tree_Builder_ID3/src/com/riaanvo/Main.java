@@ -9,39 +9,20 @@ import java.util.Map;
 
 
 /**
- * This program takes in a file containing a categorical data set and can create an ID3 model.
+ * This program takes in a file containing a categorical data set and can create an ID3 model. Different arguments will
+ * change the behaviour of the program to include model testing and data classification based on the model.
  */
 public class Main {
-    /*
-    private static final String doc = "Naval Fate.\n"
-            + "\n"
-            + "Usage:\n"
-            + "  naval_fate ship new <name>...\n"
-            + "  naval_fate ship <name> move <x> <y> [--speed=<kn>]\n"
-            + "  naval_fate ship shoot <x> <y>\n"
-            + "  naval_fate mine (set|remove) <x> <y> [--moored | --drifting]\n"
-            + "  naval_fate (-h | --help)\n"
-            + "  naval_fate --version\n"
-            + "\n"
-            + "Options:\n"
-            + "  -h --help     Show this screen.\n"
-            + "  --version     Show version.\n"
-            + "  --speed=<kn>  Speed in knots [default: 10].\n"
-            + "  --moored      Moored (anchored) mine.\n"
-            + "  --drifting    Drifting mine.\n"
-            + "\n";
 
-             [<PredictFile>] [<TreeNodeDepth>] --binarise [<OutTreeFileName>] [<OutAnalysisFileName>] [<OutPredictFileName>]
-*/
     private static final String doc = "ID3 Builder\n\n"
             + "Usage:\n"
-            + "\tID3_Builder <TrainFile> [--oTreeFile=OTREEFILE]\n"
-            + "\tID3_Builder <TrainFile> [--oTreeFile=OTREEFILE --binarise --treeDepth=TREEDEPTH]\n"
-            + "\tID3_Builder <TrainFile> [--testfile=TESTFILE --oAnalysisFile=OANALYSISFILE]\n"
-            + "\tID3_Builder <TrainFile> [--predictfile=PREDICTFILE --oPredictFile=OPREDICTFILE]\n"
-            + "\tID3_Builder <TrainFile> [--testfile=TESTFILE --oAnalysisFile=OANALYSISFILE --predictfile=PREDICTFILE --oPredictFile=OPREDICTFILE --binarise --treeDepth=TREEDEPTH]\n"
-            + "\tID3_Builder (-h | --help)\n"
-            + "\tID3_Builder --version\n"
+            + "  ID3_Builder <TrainFile> [--oTreeFile=OTREEFILE]\n"
+            + "  ID3_Builder <TrainFile> [--oTreeFile=OTREEFILE --binarise --treeDepth=TREEDEPTH --showEmptyLeaves --debug]\n"
+            + "  ID3_Builder <TrainFile> [--testfile=TESTFILE --oAnalysisFile=OANALYSISFILE]\n"
+            + "  ID3_Builder <TrainFile> [--predictfile=PREDICTFILE --oPredictFile=OPREDICTFILE]\n"
+            + "  ID3_Builder <TrainFile> [--testfile=TESTFILE --oAnalysisFile=OANALYSISFILE --predictfile=PREDICTFILE --oPredictFile=OPREDICTFILE --binarise --treeDepth=TREEDEPTH]\n"
+            + "  ID3_Builder (-h | --help)\n"
+            + "  ID3_Builder --version\n"
             + "\n"
 
             + "Options:\n"
@@ -49,126 +30,157 @@ public class Main {
             + "  --version                       Show version.\n"
             + "  --testfile=TESTFILE             Test data set file. \n"
             + "  --predictfile=PREDICTFILE       Data set file to be predicted. \n"
-
             + "  --oTreeFile=OTREEFILE           Filename for the tree output. \n"
             + "  --oAnalysisFile=OANALYSISFILE   Filename for the analysis output. \n"
             + "  --oPredictFile=OPREDICTFILE     Filename for the prediction output. \n"
-
             + "  --binarise                      Converts all categorical data to binary attributes. \n"
             + "  --treeDepth=TREEDEPTH           The number of decisions the tree is restricted to. [default: -1]\n"
+            + "  --showEmptyLeaves               Includes the empty leaves in the model. \n"
+            + "  --debug                         Prints out the data sets for debugging \n"
             + "\n";
 
     private static DataDescriptor dataDescriptor;
-    private static ArrayList<DataElement> trainDataSet = new ArrayList<DataElement>();
-    private static ArrayList<DataElement> testDataSet = new ArrayList<DataElement>();
-    private static ArrayList<DataElement> predictDataSet = new ArrayList<DataElement>();
+    private static ArrayList<DataElement> trainDataSet;
+    private static ArrayList<DataElement> testDataSet;
+    private static ArrayList<DataElement> predictDataSet;
+    private static boolean debugMode;
 
+    /**
+     * This is the starting point of the ID3 Builder program. It takes in the options and arguments for building and
+     * outputting the decision tree.
+     * @param args The options and arguments for the ID3 builder
+     */
     public static void main(final String[] args) {
 
+        // Extract the arguments from the commandline into the disired tokens
         final Map<String, Object> opts = new Docopt(doc).withVersion("ID3 Builder V1.0").parse(args);
-        System.out.println(opts);
 
-        System.out.println(opts.get("<TrainFile>"));
-        System.out.println(opts.get("--oTreeFile"));
-
-        System.out.println(opts.get("--binarise"));
-        System.out.println(opts.get("--treeDepth"));
-
-        System.out.println(opts.get("--testfile"));
-        System.out.println(opts.get("--oAnalysisFile"));
-
-        System.out.println(opts.get("--predictfile"));
-        System.out.println(opts.get("--oPredictFile"));
+        // Extract the file path, node depth and whether to binarise from the arguments
+        String trainFile = opts.get("<TrainFile>").toString();
+        int nodeDepth = Integer.parseInt(opts.get("--treeDepth").toString());
+        boolean binarise = (opts.get("--binarise").toString().equals("true"));
+        boolean showEmptyLeaves = (opts.get("--showEmptyLeaves").toString().equals("true"));
+        debugMode = (opts.get("--debug").toString().equals("true"));
 
 
-
-        String trainFile = opts.get("<TrainFile>").toString(); //"/Users/riaanvo/ADA_ID3/ADA_A2/mushroom-train(1).csv";
-        int nodeDepth = Integer.parseInt(opts.get("--treeDepth").toString()); //-1;
-        boolean binarise = (opts.get("--binarise").toString().equals("true")); //false;
-
-        // Extract arguments in to booleans for faster comparisons
+        // Check if the aditional options have been included and store the result in booleans
         boolean hasOutputStructureFile = opts.get("--oTreeFile") != null;
-
         boolean hasTestData = opts.get("--testfile") != null;
         boolean hasOutputAnalysisFile = opts.get("--oAnalysisFile") != null;
-
         boolean hasPredictionData = opts.get("--predictfile") != null;
         boolean hasOutputPredictFile = opts.get("--oPredictFile") != null;
 
+        // Create a data parser to convert the csv file into data objects
         DataParser dataParser = new DataParser();
+
+        // Extract the training data set
         dataParser.parseData(trainFile, null);
         dataDescriptor = dataParser.getDataDescriptor();
         trainDataSet = dataParser.getDataSet();
-        System.out.println();
 
+        if(debugMode){
+            displayDataSet(trainDataSet, dataDescriptor);
+        }
+
+        // If there is a test data set extract the contents
         if (hasTestData) {
+
             dataParser.parseData(opts.get("--testfile").toString(), dataDescriptor);
             testDataSet = dataParser.getDataSet();
-            System.out.println();
         }
 
+        // If there is a data set to predict classes for extract the contents
         if (hasPredictionData) {
+
             dataParser.parseData(opts.get("--predictfile").toString(), dataDescriptor);
             predictDataSet = dataParser.getDataSet();
-            System.out.println();
         }
 
+        // If the binarise option was included, convert all categorical data into binarised attributes
         if (binarise) {
-            binariseData(hasTestData, hasPredictionData);
+
+            binariseDataSets(hasTestData, hasPredictionData);
         }
 
-        // Build the ID3 tree
+        // Build the ID3 decision tree model
         ID3 id3Tree = new ID3(trainDataSet, nodeDepth);
-        System.out.println();
 
-        String diagramScript = id3Tree.createTreeDiagramScript();
-        if(hasOutputStructureFile){
+        // Create a text layout of the model
+        String diagramScript = id3Tree.createTreeDiagramScript(showEmptyLeaves);
+
+        // If there is an output file, write out the text model, else print it to the CLI
+        if (hasOutputStructureFile) {
+
             writeToFile(opts.get("--oTreeFile").toString(), diagramScript);
         } else {
+
             System.out.println(diagramScript);
         }
 
+        // If there is a test data set, test the performance of the model
         if (hasTestData) {
+
             String testInformation = id3Tree.testModel(testDataSet);
-            if(hasOutputAnalysisFile){
+
+            // If an output file was provided write the analysis to it, else print it to the CLI
+            if (hasOutputAnalysisFile) {
+
                 writeToFile(opts.get("--oAnalysisFile").toString(), testInformation);
             } else {
+
                 System.out.println(testInformation + "\n");
-                System.out.println();
             }
         }
 
+        // If there is a data set to predict classes for, use the model to predict the classes
         if (hasPredictionData) {
+
             String predictionInformation = id3Tree.predictClasses(predictDataSet);
-            if(hasOutputPredictFile){
+
+            // If there is an output file, write the predictions to that file, else display to the CLI
+            if (hasOutputPredictFile) {
+
                 writeToFile(opts.get("--oPredictFile").toString(), predictionInformation);
             } else {
+
                 System.out.println(predictionInformation + "\n");
-                System.out.println();
             }
         }
     }
 
-    private static void binariseData(boolean hasTestData, boolean hasPredictionData) {
+    /**
+     * This method converts all the stored data sets to binarised attribute data sets. This can be used to create
+     * decision trees with only true/false decisions and not multiple route decisions
+     *
+     * @param hasTestData       Does the test set exist
+     * @param hasPredictionData Does the prediction set exist
+     */
+    private static void binariseDataSets(boolean hasTestData, boolean hasPredictionData) {
 
-        CategoricalDataPreprocessor preprocessor = new CategoricalDataPreprocessor();
-        preprocessor.processData(trainDataSet, dataDescriptor, null);
-        DataDescriptor binarisedDataDescriptor = preprocessor.getDataDescriptor();
+        // Create a data preprocessor to convert to binarised data
+        DataPreprocessor preprocessor = new DataPreprocessor();
+
+        // Convert the training data set to the new binarised data set
+        preprocessor.binariseDataSet(trainDataSet, dataDescriptor);
         trainDataSet = preprocessor.getDataSet();
-        System.out.println();
 
+        if(debugMode) {
+            displayDataSet(trainDataSet, preprocessor.getDataDescriptor());
+        }
+
+        // If a test set was provided, binarise the values and store the new data set
         if (hasTestData) {
-            preprocessor.processData(testDataSet, dataDescriptor, binarisedDataDescriptor);
+
+            preprocessor.binariseDataSet(testDataSet, dataDescriptor);
             testDataSet = preprocessor.getDataSet();
-            System.out.println();
         }
 
+        // If a prediction set was provided, binarise the values and store the new data set
         if (hasPredictionData) {
-            preprocessor.processData(predictDataSet, dataDescriptor, binarisedDataDescriptor);
-            predictDataSet = preprocessor.getDataSet();
-            System.out.println();
-        }
 
+            preprocessor.binariseDataSet(predictDataSet, dataDescriptor);
+            predictDataSet = preprocessor.getDataSet();
+        }
     }
 
     /**
@@ -178,13 +190,55 @@ public class Main {
      * @param fileContents Contents to be placed in the file
      */
     private static void writeToFile(String fileName, String fileContents) {
-        System.out.println("Writing to file: " + fileName);
+        System.out.print("Writing to file: " + fileName);
         try (FileWriter fileWriter = new FileWriter(fileName); BufferedWriter bw = new BufferedWriter(fileWriter)) {
             bw.write(fileContents);
-            System.out.println("Writing Complete");
+            System.out.println(" | COMPLETE");
         } catch (Exception e) {
+            System.out.println("\nWriting Failed");
             e.printStackTrace();
         }
+    }
+
+
+    /**
+     * Displays the first desired number of data elements from the data set and the data descriptor.
+     *
+     * @param dataSet Data set to be displayed
+     * @param dataDescriptor Data descriptor to be displayed
+     */
+    private static void displayDataSet(ArrayList<DataElement> dataSet, DataDescriptor dataDescriptor) {
+
+        // Set the number of elements to show to 10 or less depending on the data set
+        int numberOfElementsToShow = 10;
+        if(numberOfElementsToShow > dataSet.size()) {
+
+            numberOfElementsToShow = dataSet.size();
+        }
+
+        StringBuilder s = new StringBuilder();
+
+        //Check if the data descriptor is null and add the output if it is not
+        if (dataDescriptor != null) {
+
+            s.append(dataDescriptor.toString());
+        }
+
+        // Print out the desired number of rows of data
+        s.append("\n\nData output Actual:\n");
+        for (int i = 0; i < numberOfElementsToShow; i++) {
+
+            s.append(dataSet.get(i).toStringInts()).append("\n");
+        }
+
+        // Print out the desired number of rows of data
+        s.append("\n\nData output String conversion:\n");
+        for (int i = 0; i < numberOfElementsToShow; i++) {
+
+            s.append(dataSet.get(i).toString()).append("\n");
+        }
+
+        System.out.println(s.toString());
     }
 
 }
