@@ -57,7 +57,7 @@ public class ID3 {
         // Create and store the root node of the model. This will recursively construct the decision tree
         rootNode = new Node(trainingData, attributesLeft.toString(), 0);
 
-        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms\n");
+        System.out.println("\t| TIME TAKEN: " + (System.currentTimeMillis() - previousTime) + "ms\n");
     }
 
     /**
@@ -97,7 +97,7 @@ public class ID3 {
         }
 
         // Display the time taken to test the data set
-        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
+        System.out.println("\t| TIME TAKEN: " + (System.currentTimeMillis() - previousTime) + "ms");
 
         StringBuilder s = new StringBuilder();
         s.append("Number of samples: ").append(testDataSet.size()).append("\n");
@@ -172,7 +172,7 @@ public class ID3 {
         }
 
         // Display the time taken to predict the data set
-        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
+        System.out.println("\t| TIME TAKEN: " + (System.currentTimeMillis() - previousTime) + "ms");
 
         return s.toString();
     }

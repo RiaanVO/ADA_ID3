@@ -16,11 +16,12 @@ public class Main {
 
     private static final String doc = "ID3 Builder\n\n"
             + "Usage:\n"
-            + "  ID3_Builder <TrainFile> [--oTreeFile=OTREEFILE]\n"
-            + "  ID3_Builder <TrainFile> [--oTreeFile=OTREEFILE --binarise --treeDepth=TREEDEPTH --showEmptyLeaves --debug]\n"
-            + "  ID3_Builder <TrainFile> [--testfile=TESTFILE --oAnalysisFile=OANALYSISFILE]\n"
-            + "  ID3_Builder <TrainFile> [--predictfile=PREDICTFILE --oPredictFile=OPREDICTFILE]\n"
-            + "  ID3_Builder <TrainFile> [--testfile=TESTFILE --oAnalysisFile=OANALYSISFILE --predictfile=PREDICTFILE --oPredictFile=OPREDICTFILE --binarise --treeDepth=TREEDEPTH]\n"
+            + "  ID3_Builder <trainFile> [--oTreeFile=OTREEFILE --binarise --treeDepth=TREEDEPTH --showEmptyLeaves --debug]\n"
+
+            + "  ID3_Builder <trainFile> [--oTreeFile=OTREEFILE] [--testFile=TESTFILE] [--oAnalysisFile=OANALYSISFILE] "
+            + "[--predictFile=PREDICTFILE] [--oPredictFile=OPREDICTFILE] "
+            + "[--binarise] [--treeDepth=TREEDEPTH] [--showEmptyLeaves] [--debug]\n"
+
             + "  ID3_Builder (-h | --help)\n"
             + "  ID3_Builder --version\n"
             + "\n"
@@ -28,8 +29,8 @@ public class Main {
             + "Options:\n"
             + "  -h --help                       Show this screen.\n"
             + "  --version                       Show version.\n"
-            + "  --testfile=TESTFILE             Test data set file. \n"
-            + "  --predictfile=PREDICTFILE       Data set file to be predicted. \n"
+            + "  --testFile=TESTFILE             Test data set file. \n"
+            + "  --predictFile=PREDICTFILE       Data set file to be predicted. \n"
             + "  --oTreeFile=OTREEFILE           Filename for the tree output. \n"
             + "  --oAnalysisFile=OANALYSISFILE   Filename for the analysis output. \n"
             + "  --oPredictFile=OPREDICTFILE     Filename for the prediction output. \n"
@@ -56,7 +57,7 @@ public class Main {
         final Map<String, Object> opts = new Docopt(doc).withVersion("ID3 Builder V1.0").parse(args);
 
         // Extract the file path, node depth and whether to binarise from the arguments
-        String trainFile = opts.get("<TrainFile>").toString();
+        String trainFile = opts.get("<trainFile>").toString();
         int nodeDepth = Integer.parseInt(opts.get("--treeDepth").toString());
         boolean binarise = (opts.get("--binarise").toString().equals("true"));
         boolean showEmptyLeaves = (opts.get("--showEmptyLeaves").toString().equals("true"));
@@ -65,9 +66,9 @@ public class Main {
 
         // Check if the aditional options have been included and store the result in booleans
         boolean hasOutputStructureFile = opts.get("--oTreeFile") != null;
-        boolean hasTestData = opts.get("--testfile") != null;
+        boolean hasTestData = opts.get("--testFile") != null;
         boolean hasOutputAnalysisFile = opts.get("--oAnalysisFile") != null;
-        boolean hasPredictionData = opts.get("--predictfile") != null;
+        boolean hasPredictionData = opts.get("--predictFile") != null;
         boolean hasOutputPredictFile = opts.get("--oPredictFile") != null;
 
         // Create a data parser to convert the csv file into data objects
@@ -85,14 +86,14 @@ public class Main {
         // If there is a test data set extract the contents
         if (hasTestData) {
 
-            dataParser.parseData(opts.get("--testfile").toString(), dataDescriptor);
+            dataParser.parseData(opts.get("--testFile").toString(), dataDescriptor);
             testDataSet = dataParser.getDataSet();
         }
 
         // If there is a data set to predict classes for extract the contents
         if (hasPredictionData) {
 
-            dataParser.parseData(opts.get("--predictfile").toString(), dataDescriptor);
+            dataParser.parseData(opts.get("--predictFile").toString(), dataDescriptor);
             predictDataSet = dataParser.getDataSet();
         }
 

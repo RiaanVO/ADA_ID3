@@ -36,7 +36,7 @@ public class DataParser {
         // Extract out the contents of the file
         String trainingCSVText = extractFileContents(filePath);
 
-        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
+        System.out.println("\t| TIME TAKEN: " + (System.currentTimeMillis() - previousTime) + "ms");
         previousTime = System.currentTimeMillis();
         System.out.print("Extracting data:");
 
@@ -44,7 +44,7 @@ public class DataParser {
         String[] rows = trainingCSVText.split("\n");
         extractDataSet(rows, dataDescriptor);
 
-        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms\n");
+        System.out.println("\t| TIME TAKEN: " + (System.currentTimeMillis() - previousTime) + "ms\n");
 
     }
 

@@ -34,7 +34,7 @@ public class DataPreprocessor {
             dataDescriptor = new DataDescriptor(createNewHeaders(oldDataDescriptor));
             enterUniqueValues(oldDataDescriptor);
 
-            System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
+            System.out.println("\t| TIME TAKEN: " + (System.currentTimeMillis() - previousTime) + "ms");
         }
 
         previousTime = System.currentTimeMillis();
@@ -43,7 +43,7 @@ public class DataPreprocessor {
         // Convert the old data set and store it
         dataSet = convertToNewDataSet(oldDataDescriptor, oldDataSet);
 
-        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms\n");
+        System.out.println("\t| TIME TAKEN: " + (System.currentTimeMillis() - previousTime) + "ms\n");
     }
 
     /**
