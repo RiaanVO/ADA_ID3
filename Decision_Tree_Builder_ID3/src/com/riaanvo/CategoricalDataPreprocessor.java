@@ -7,9 +7,10 @@ public class CategoricalDataPreprocessor {
     private DataDescriptor dataDescriptor;
     private ArrayList<DataElement> dataSet;
 
-    public CategoricalDataPreprocessor(ArrayList<DataElement> oldDataSet, DataDescriptor oldDataDescriptor, DataDescriptor newDataDescriptor){
-        long previousTime = System.currentTimeMillis();
+    public CategoricalDataPreprocessor(){}
 
+    public void processData(ArrayList<DataElement> oldDataSet, DataDescriptor oldDataDescriptor, DataDescriptor newDataDescriptor){
+        long previousTime = System.currentTimeMillis();
 
         if(newDataDescriptor == null){
             System.out.print("Defining new data descriptor:");

@@ -9,19 +9,18 @@ public class ID3 {
 
     //Used for determining the decision tree structure
     private int currentNodeIndex = 0;
-    private int maxNodeDepth;
+    private final int maxNodeDepth;
 
     private final DataDescriptor dataDescriptor;
     private Node rootNode;
-    private String decFormat = "%.3f";
+    private final String decFormat = "%.3f";
 
-            /**
-             * Constructor for the ID3 model. It takes in the data descriptor for the data set as well as the training data,
-             * it then creates the model and stores the structure.
-             *
-             * @param dataDescriptor Data descriptor for the data set
-             * @param trainingData   Training data elements used to build the model
-             */
+    /**
+     * Constructor for the ID3 model. It takes in the data descriptor for the data set as well as the training data,
+     * it then creates the model and stores the structure.
+     * @param trainingData Data set to build the model with
+     * @param maxNodeDepth The max node depth of the tree
+     */
     public ID3(ArrayList<DataElement> trainingData, int maxNodeDepth) {
 
         this.dataDescriptor = DataElement.getDataDescriptor();
@@ -71,7 +70,7 @@ public class ID3 {
         String s = "";
         s += "digraph Tree {\nnode [shape=box, style=\"filled\", color=\"black\"];\n";
         s += rootNode.toString();
-        s += "}";
+        s += "}\n";
         return s;
     }
 
@@ -98,7 +97,7 @@ public class ID3 {
         }
 
         // Display the time taken to test the data set
-        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms\n");
+        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
 
         StringBuilder s = new StringBuilder();
         s.append("Number of samples: ").append(testDataSet.size()).append("\n");
@@ -162,10 +161,10 @@ public class ID3 {
      */
     public String predictClasses(ArrayList<DataElement> dataSet) {
         StringBuilder s = new StringBuilder();
-        s.append("Predicted Values:\n");
+        s.append("Predicted Classes:\n");
 
         long previousTime = System.currentTimeMillis();
-        System.out.print("Predicting Values:");
+        System.out.print("Predicting Classes:");
 
         for (DataElement dataElement : dataSet) {
             String value = dataDescriptor.indexToValue(dataDescriptor.getClassAttributeIndex(), rootNode.determineClass(dataElement));
@@ -173,7 +172,7 @@ public class ID3 {
         }
 
         // Display the time taken to predict the data set
-        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms\n");
+        System.out.println("\t| Time Taken: " + (System.currentTimeMillis() - previousTime) + "ms");
 
         return s.toString();
     }

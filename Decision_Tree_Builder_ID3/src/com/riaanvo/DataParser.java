@@ -15,14 +15,17 @@ public class DataParser {
     private DataDescriptor dataDescriptor;
     private ArrayList<DataElement> dataSet;
 
+
+    public DataParser() {}
+
     /**
-     * Constructor for creating a data parser. Takes in the file path of the data set and the data descriptor used
+     * Takes in the file path of the data set and the data descriptor used
      * to convert the string values to integers. If no data descriptor is provided, one will be created.
      *
      * @param filePath       The file path of the data set
      * @param dataDescriptor The data descriptor to decode the data sets values
      */
-    public DataParser(String filePath, DataDescriptor dataDescriptor) {
+    public void parseData(String filePath, DataDescriptor dataDescriptor){
 
         this.dataDescriptor = dataDescriptor;
         long previousTime = System.currentTimeMillis();
