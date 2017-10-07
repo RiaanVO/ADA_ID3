@@ -65,30 +65,35 @@ public class Main {
 
     public static void main(final String[] args) {
 
-        //final Map<String, Object> opts = new Docopt(doc).withVersion("ID3 Builder V1.0").parse(args);
-        //System.out.println(opts);
+        final Map<String, Object> opts = new Docopt(doc).withVersion("ID3 Builder V1.0").parse(args);
+        System.out.println(opts);
 
-        String trainFile = "/Users/riaanvo/ADA_ID3/ADA_A2/mushroom-train(1).csv";
-        String outputStructureFile = "";
+        System.out.println(opts.get("<TrainFile>"));
+        System.out.println(opts.get("--oTreeFile"));
 
-        String testFile = "/Users/riaanvo/ADA_ID3/ADA_A2/mushroom-test(1).csv";
-        String outputAnalysisFile = "";
+        System.out.println(opts.get("--binarise"));
+        System.out.println(opts.get("--treeDepth"));
 
-        String predictFile = "/Users/riaanvo/ADA_ID3/ADA_A2/mushroom-test(1).csv";
-        String outputPredictFile = "";
+        System.out.println(opts.get("--testfile"));
+        System.out.println(opts.get("--oAnalysisFile"));
+
+        System.out.println(opts.get("--predictfile"));
+        System.out.println(opts.get("--oPredictFile"));
 
 
-        int nodeDepth = -1;
-        boolean binarise = false;
 
-        boolean hasOutputStructureFile = !outputStructureFile.equals("");
+        String trainFile = opts.get("<TrainFile>").toString(); //"/Users/riaanvo/ADA_ID3/ADA_A2/mushroom-train(1).csv";
+        int nodeDepth = Integer.parseInt(opts.get("--treeDepth").toString()); //-1;
+        boolean binarise = (opts.get("--binarise").toString().equals("true")); //false;
 
-        boolean hasTestData = !testFile.equals("");
-        boolean hasOutputAnalysisFile = !outputAnalysisFile.equals("");
+        // Extract arguments in to booleans for faster comparisons
+        boolean hasOutputStructureFile = opts.get("--oTreeFile") != null;
 
-        boolean hasPredictionData = !predictFile.equals("");
-        boolean hasOutputPredictFile = !outputPredictFile.equals("");
+        boolean hasTestData = opts.get("--testfile") != null;
+        boolean hasOutputAnalysisFile = opts.get("--oAnalysisFile") != null;
 
+        boolean hasPredictionData = opts.get("--predictfile") != null;
+        boolean hasOutputPredictFile = opts.get("--oPredictFile") != null;
 
         DataParser dataParser = new DataParser();
         dataParser.parseData(trainFile, null);
@@ -97,13 +102,13 @@ public class Main {
         System.out.println();
 
         if (hasTestData) {
-            dataParser.parseData(testFile, dataDescriptor);
+            dataParser.parseData(opts.get("--testfile").toString(), dataDescriptor);
             testDataSet = dataParser.getDataSet();
             System.out.println();
         }
 
         if (hasPredictionData) {
-            dataParser.parseData(predictFile, dataDescriptor);
+            dataParser.parseData(opts.get("--predictfile").toString(), dataDescriptor);
             predictDataSet = dataParser.getDataSet();
             System.out.println();
         }
@@ -118,7 +123,7 @@ public class Main {
 
         String diagramScript = id3Tree.createTreeDiagramScript();
         if(hasOutputStructureFile){
-            writeToFile(outputStructureFile, diagramScript);
+            writeToFile(opts.get("--oTreeFile").toString(), diagramScript);
         } else {
             System.out.println(diagramScript);
         }
@@ -126,7 +131,7 @@ public class Main {
         if (hasTestData) {
             String testInformation = id3Tree.testModel(testDataSet);
             if(hasOutputAnalysisFile){
-                writeToFile(outputAnalysisFile, testInformation);
+                writeToFile(opts.get("--oAnalysisFile").toString(), testInformation);
             } else {
                 System.out.println(testInformation + "\n");
                 System.out.println();
@@ -136,7 +141,7 @@ public class Main {
         if (hasPredictionData) {
             String predictionInformation = id3Tree.predictClasses(predictDataSet);
             if(hasOutputPredictFile){
-                writeToFile(outputPredictFile, predictionInformation);
+                writeToFile(opts.get("--oPredictFile").toString(), predictionInformation);
             } else {
                 System.out.println(predictionInformation + "\n");
                 System.out.println();
