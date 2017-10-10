@@ -42,7 +42,7 @@ public class ID3 {
         // Reset node indexing if a new model is built
         currentNodeIndex = 0;
 
-        // Create a string to contain indicators of which attributes have been used
+        // Create a string to contain indicators of which attributes have been used (Not needed for categorical data)
         StringBuilder attributesLeft = new StringBuilder();
         for (int i = 0; i < dataDescriptor.getNumberOfAttributes(); i++) {
 
@@ -423,8 +423,8 @@ public class ID3 {
                 // If the probability is zero skip this value to prevent math errors
                 if (p_ == 0) continue;
 
-                // Calculate the entropy to be added
-                ent += -p_ * Math.log(p_);
+                // Calculate the entropy to be added (log base conversion is used to get log base 2)
+                ent += -p_ * (Math.log(p_)/Math.log(2));
             }
 
             return ent;
