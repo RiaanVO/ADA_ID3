@@ -135,16 +135,16 @@ public class ID3 {
             s.append("\nError Rate: ").append(String.format(decFormat, errorRate)).append("%");
 
             double FAR = (double) (confusionMatrix[0][1]) / (double) (confusionMatrix[0][1] + confusionMatrix[0][0]) * 100;
-            s.append("\nFalse Alarm Rate: ").append(String.format(decFormat, FAR)).append("%");
+            //s.append("\nFalse Alarm Rate: ").append(String.format(decFormat, FAR)).append("%");
 
             double DR = (double) (confusionMatrix[1][1]) / (double) (confusionMatrix[1][1] + confusionMatrix[1][0]) * 100;
-            s.append("\nDetection Rate: ").append(String.format(decFormat, DR)).append("%");
+            //s.append("\nDetection Rate: ").append(String.format(decFormat, DR)).append("%");
 
             double precision = (double) (confusionMatrix[1][1]) / (double) (confusionMatrix[0][1] + confusionMatrix[1][1]) * 100;
-            s.append("\nPrecision: ").append(String.format(decFormat, precision)).append("%");
+            //s.append("\nPrecision: ").append(String.format(decFormat, precision)).append("%");
 
             double recall = DR;
-            s.append("\nRecall: ").append(String.format(decFormat, recall)).append("%");
+            //s.append("\nRecall: ").append(String.format(decFormat, recall)).append("%");
 
             double F1 = 2 * precision * recall / (precision + recall);
             s.append("\nF1 score: ").append(String.format(decFormat, F1)).append("%");
